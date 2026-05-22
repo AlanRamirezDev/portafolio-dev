@@ -1,47 +1,63 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
+
 const proyectos = await getCollection('proyectos');
 ---
 
 <Layout>
-	<main class="max-w-4xl mx-auto p-8 mt-12">
-		<header class="mb-20">
-			<h1 class="text-5xl font-bold mb-4 text-emerald-400">Software Engineer</h1>
-			<p class="text-xl text-slate-300">
-				Especializado en Arquitecturas Backend, Sistemas Distribuidos y APIs Seguras.
-			</p>
-		</header>
+    <main class="max-w-4xl mx-auto p-8 mt-12">
+        <header class="mb-24">
+            <div class="inline-block mb-4 px-3 py-1 bg-surface border border-white/10 rounded-md">
+                <code class="font-mono text-sm text-accent">
+                    > system.environment === "production"
+                </code>
+            </div>
+            <h1 class="text-5xl md:text-6xl font-bold mb-6 text-white font-sans tracking-tight">
+                Ingeniero de Software <br><span class="text-accent">Full Stack</span><br>
+            </h1>
+            <p class="text-xl text-text max-w-2xl leading-relaxed">
+                Especializado en Arquitecturas Limpias, Sistemas Distribuidos y APIs Seguras. 
+                Construyendo soluciones escalables de alto rendimiento.
+            </p>
+        </header>
 
-		<section>
-			<h2 class="text-3xl font-semibold mb-8 border-b border-slate-700 pb-2">Casos de Estudio</h2>
-			
-			<div class="grid gap-8">
-				{proyectos.map((proyecto) => (
-					<a href={`/proyectos/${proyecto.id}`} class="block group">
-						<article class="bg-slate-800 p-8 rounded-2xl border border-slate-700 group-hover:border-emerald-500 transition-colors shadow-lg h-full">
-							<div class="flex justify-between items-start mb-4">
-								<h3 class="text-2xl font-bold text-white">{proyecto.data.title}</h3>
-								<span class="bg-emerald-900/50 text-emerald-400 text-xs px-3 py-1 rounded-full border border-emerald-700/50">
-									{proyecto.data.status}
-								</span>
-							</div>
-							
-							<p class="text-slate-300 mb-6 leading-relaxed text-lg">
-								{proyecto.data.description}
-							</p>
-							
-							<div class="flex flex-wrap gap-3">
-								{proyecto.data.tech.map((tecnologia) => (
-									<span class="bg-slate-900 text-slate-300 text-sm px-4 py-1.5 rounded-lg border border-slate-700">
-										{tecnologia}
-									</span>
-								))}
-							</div>
-						</article>
-					</a>
-				))}
-			</div>
-		</section>
-	</main>
+        <section>
+            <h2 class="text-2xl font-semibold mb-8 border-b border-white/10 pb-4 text-white flex items-center gap-2">
+                <span class="text-accent font-mono text-lg">01.</span> Casos de Estudio
+            </h2>
+            
+            <div class="grid gap-8">
+                {proyectos.map((proyecto) => (
+                    <a href={`/proyectos/${proyecto.id}`} class="block group">
+                        <article class="bg-surface p-8 rounded-2xl border border-white/5 group-hover:border-accent transition-all duration-300 shadow-lg group-hover:shadow-accent/5 h-full relative overflow-hidden">
+                            
+                            <div class="absolute inset-0 bg-gradient-to-r from-accent/0 via-accent/5 to-accent/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+
+                            <div class="flex justify-between items-start mb-4 relative z-10">
+                                <h3 class="text-2xl font-bold text-white font-sans group-hover:text-accent transition-colors">
+                                    {proyecto.data.title}
+                                </h3>
+                                <span class="bg-accent/10 text-accent font-mono text-xs px-3 py-1 rounded-full border border-accent/20">
+                                    {proyecto.data.status}
+                                </span>
+                            </div>
+                            
+                            <p class="text-text mb-6 leading-relaxed text-lg relative z-10">
+                                {proyecto.data.description}
+                            </p>
+                            
+                            <div class="flex flex-wrap gap-3 relative z-10">
+                                {proyecto.data.tech.map((tecnologia) => (
+                                    <span class="bg-background text-text font-mono text-sm px-4 py-1.5 rounded-lg border border-white/10">
+                                        {tecnologia}
+                                    </span>
+                                ))}
+                            </div>
+                        </article>
+                    </a>
+                ))}
+            </div>
+        </section>
+    </main>
 </Layout>

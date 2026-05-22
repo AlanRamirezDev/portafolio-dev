@@ -1,2 +1,13 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+@theme {
+  /* Paleta de colores */
+  --color-background: #0a0a0a;
+  --color-surface: #171717;
+  --color-text: #d4d4d4;
+  --color-accent: #10b981;
+
+  /* Tipografías */
+  --font-sans: "Space Grotesk", sans-serif;
+  --font-mono: "Fira Code", monospace;
+}

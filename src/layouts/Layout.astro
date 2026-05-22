@@ -1,14 +1,32 @@
 ---
 import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "Portafolio Profesional" } = Astro.props;
 ---
+
 <!doctype html>
-<html lang="es">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<title>Portafolio Profesional</title>
-	</head>
-	<body class="bg-slate-900 text-white">
-		<slot />
-	</body>
+<html lang="es" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <title>{title}</title>
+  </head>
+  <body class="bg-background text-text font-sans antialiased min-h-screen selection:bg-accent/30 selection:text-accent">
+    <div class="max-w-4xl mx-auto px-6 py-12 md:py-20">
+      <slot />
+    </div>
+  </body>
 </html>
