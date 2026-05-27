@@ -2,7 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import { getCollection, render } from 'astro:content';
 
-// 1. Función para saber cuántas páginas generar (una por cada archivo .md)
+// Función para saber cuántas páginas generar (una por cada archivo .md)
 export async function getStaticPaths() {
   const proyectos = await getCollection('proyectos');
   return proyectos.map(proyecto => ({
@@ -11,13 +11,13 @@ export async function getStaticPaths() {
   }));
 }
 
-// 2. Obtenemos los datos del proyecto actual
+// Obtenemos los datos del proyecto actual
 const { proyecto } = Astro.props;
 const { Content } = await render(proyecto);
 ---
 
 <Layout title={`${proyecto.data.title} | Portafolio Backend`}>
-  <main class="max-w-4xl mx-auto p-8 mt-12">
+  <main class="max-w-4xl mx-auto p-8 mt-4">
     <a href="/" class="text-accent hover:text-accent/80 mb-8 inline-flex items-center gap-2 font-mono text-sm transition-colors">
       <span>&lt;-</span> Volver al sistema principal
     </a>
@@ -35,9 +35,17 @@ const { Content } = await render(proyecto);
         ))}
       </div>
       
-      <p class="text-xl text-text leading-relaxed max-w-3xl">
+      <p class="text-xl text-text leading-relaxed max-w-3xl mb-6">
         {proyecto.data.description}
       </p>
+
+      {proyecto.id === 'motor-inversiones' && (
+        <div class="mb-4">
+          <a href="/sandbox" class="inline-flex items-center gap-2 bg-accent text-background font-bold px-4 py-2 rounded-lg hover:bg-accent/80 transition-colors shadow-sm text-sm">
+            🚀 Probar Sandbox en Vivo
+          </a>
+        </div>
+      )}
     </header>
 
     <article class="prose prose-invert prose-headings:font-sans prose-headings:text-white prose-p:text-text prose-a:text-accent hover:prose-a:text-accent/80 prose-code:font-mono prose-code:text-accent prose-pre:bg-surface prose-pre:border prose-pre:border-white/10 max-w-none">
