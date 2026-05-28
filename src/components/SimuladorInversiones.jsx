@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 
-const API_BASE_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.PROD 
+  ? 'https://motor-inversiones-api.onrender.com' 
+  : 'http://localhost:8080';
 
 export default function SimuladorInversiones() {
   // Guardamos el estado de los balances. Inicialmente están en 0.
