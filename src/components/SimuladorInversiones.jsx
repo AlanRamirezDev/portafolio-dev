@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
+const API_BASE_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:8080';
+
 export default function SimuladorInversiones() {
   // Guardamos el estado de los balances. Inicialmente están en 0.
   const [balances, setBalances] = useState({ mxn: 0, usdc: 0 });
@@ -39,14 +41,14 @@ export default function SimuladorInversiones() {
   const obtenerPortafolio = async () => {
     try {
       // Consulta al usuario con ID 1 y agrega log
-      agregarLog('GET /api/v1/portafolios/1 - Obteniendo datos...', 'info');
-      let response = await fetch('http://localhost:8080/api/v1/portafolios/1');
+      agregarLog(`GET ${API_BASE_URL}/api/v1/portafolios/1 - Obteniendo datos...`, 'info');
+      let response = await fetch(`${API_BASE_URL}/api/v1/portafolios/1`);
 
       // Si la respuesta es 404 (no existe), lo inicializamos
       if (response.status === 404) {
-        agregarLog('Portafolio no encontrado. POST /api/v1/portafolios/inicializar/1', 'warning');
-        await fetch('http://localhost:8080/api/v1/portafolios/inicializar/1', { method: 'POST' });
-        response = await fetch('http://localhost:8080/api/v1/portafolios/1');
+        agregarLog(`404 No encontrado. POST ${API_BASE_URL}/api/v1/portafolios/inicializar/1`, 'warning');
+        await fetch(`${API_BASE_URL}/api/v1/portafolios/inicializar/1`, { method: 'POST' });
+        response = await fetch(`${API_BASE_URL}/api/v1/portafolios/1`);
       }
 
       // Extraemos los datos y actualizamos la interfaz
@@ -68,7 +70,7 @@ export default function SimuladorInversiones() {
     }
     try {
       agregarLog(`POST /api/v1/portafolios/1/inyeccion - Payload: { monto: ${montoInyeccion} }`, 'info');
-      const response = await fetch('http://localhost:8080/api/v1/portafolios/1/inyeccion', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/portafolios/1/inyeccion`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ monto: Number(montoInyeccion) })
@@ -101,7 +103,7 @@ export default function SimuladorInversiones() {
     }
     try {
       agregarLog(`POST /api/v1/portafolios/1/comprar-usdc - Payload: { montoMxn: ${montoCompra} }`, 'info');
-      const response = await fetch('http://localhost:8080/api/v1/portafolios/1/comprar-usdc', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/portafolios/1/comprar-usdc`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ montoMxn: Number(montoCompra), tipoCambio: 18.50 })
@@ -128,8 +130,8 @@ export default function SimuladorInversiones() {
   // Función para dejar el portafolio en 0 (reinicio)
   const reiniciarPortafolio = async () => {
     try {
-      agregarLog('POST /api/v1/portafolios/1/reiniciar - Solicitando limpieza de datos...', 'warning');
-      await fetch('http://localhost:8080/api/v1/portafolios/1/reiniciar', { method: 'POST' });
+      agregarLog('POST /api/v1/portafolios/1/reiniciar - Limpieza...', 'warning');
+      await fetch(`${API_BASE_URL}/api/v1/portafolios/1/reiniciar`, { method: 'POST' });
       agregarLog('200 OK - Base de datos restablecida', 'success');
       mostrarNotificacion('Balances reiniciados', 'exito');
       obtenerPortafolio();
