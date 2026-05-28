@@ -1,43 +1,41 @@
-# Astro Starter Kit: Minimal
+# Alan Michel Ramírez Juárez - Portafolio de Desarrollo
 
-```sh
-pnpm create astro@latest -- --template minimal
-```
+¡Bienvenido a mi repositorio!
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+---
 
-## 🚀 Project Structure
+**Motor Transaccional para Inversiones**
+Este proyecto está diseñado bajo una arquitectura modular y estática utilizando **Astro**, sirviendo como hub central para mostrar mi experiencia, habilidades y proyectos de ingeniería de software.
 
-Inside of your Astro project, you'll see the following folders and files:
+## 🚀 Características del Proyecto
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+- **Arquitectura Híbrida:** Generación de sitio estático (SSG) con Astro para un rendimiento óptimo y tiempos de carga instantáneos.
+- **Componentes Reactivos:** Integración modular de **React** para islas de interactividad dinámicas dentro del sitio estático.
+- **Estilos Modernos:** Diseñado con Tailwind CSS enfocado en la legibilidad y un aspecto profesional, minimalista y limpio.
+- **Despliegue Continuo (CI/CD):** Configurado y desplegado automáticamente en **Vercel** con cada actualización del repositorio.
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+---
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## 📈 Proyectos Destacados e Integraciones
 
-Any static assets, like images, can be placed in the `public/` directory.
+### 1. Sandbox Interactivo: Motor Transaccional de Inversiones
 
-## 🧞 Commands
+Ecosistema Fullstack integrado directamente como un componente modular dentro del portafolio.
 
-All commands are run from the root of the project, from a terminal:
+- **Integración Viva en la Nube:** Realiza peticiones asíncronas reales (`fetch`) hacia un backend robusto en **Spring Boot 3** desplegado en Render.
+- **Persistencia Real:** Conectado a una base de datos PostgreSQL Serverless (**Neon DB**) que refleja la persistencia de datos en tiempo real entre múltiples sesiones.
+- **UI Reactiva Defensiva:** Desarrollado con **React**. Cuenta con una gestión de estados resiliente que intercepta códigos de estado HTTP para autogestionar la inicialización de registros de forma transparente para el usuario.
+- **Logger de Red Integrado:** Emula una terminal técnica en la interfaz que despliega visualmente el ciclo de vida de cada petición (HTTP Requests/Responses).
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
+---
 
-## 👀 Want to learn more?
+## 🛠️ Comandos de Desarrollo
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Todos los comandos se ejecutan desde la raíz del proyecto utilizando `pnpm`:
+
+| Comando | Acción |
+| :--- | :--- |
+| `pnpm install` | Instala las dependencias del proyecto |
+| `pnpm dev` | Inicia el servidor de desarrollo local en `localhost:4321` |
+| `pnpm build` | Compila el sitio optimizado para producción en `./dist/` |
+| `pnpm preview` | Previsualiza la compilación de producción localmente |
