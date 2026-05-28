@@ -45,18 +45,21 @@ export default function SimuladorInversiones() {
       let response = await fetch(`${API_BASE_URL}/api/v1/portafolios/1`);
 
       // Si la respuesta es 404 (no existe), lo inicializamos
-      if (response.status === 404) {
-        agregarLog(`404 No encontrado. POST ${API_BASE_URL}/api/v1/portafolios/inicializar/1`, 'warning');
+      if (!response.ok) {
+        agregarLog(`Portafolio no listo (Status ${response.status}). Inicializando...`, 'warning');
         await fetch(`${API_BASE_URL}/api/v1/portafolios/inicializar/1`, { method: 'POST' });
         response = await fetch(`${API_BASE_URL}/api/v1/portafolios/1`);
       }
 
       // Extraemos los datos y actualizamos la interfaz
       const data = await response.json();
-      setBalances({ mxn: data.balanceMxn, usdc: data.balanceUsdc });
-      agregarLog('200 OK - Datos sincronizados exitosamente', 'success');
+      setBalances({ 
+        mxn: data.balanceMxn != null ? data.balanceMxn : 0, 
+        usdc: data.balanceUsdc != null ? data.balanceUsdc : 0 
+      });      
+      agregarLog('200 OK - Datos sincronizados', 'success');
     } catch (error) {
-      agregarLog('ERR_CONNECTION_REFUSED - El backend no responde', 'error');
+      agregarLog('ERR_CONNECTION - Revisar consola', 'error');
     } finally {
       setCargando(false);
     }
