@@ -149,7 +149,19 @@ export default function SimuladorInversiones() {
     obtenerPortafolio();
   }, []);
 
-  if (cargando) return <div className="text-accent text-center p-4 font-mono animate-pulse">Conectando con el motor de inversiones...</div>;
+  if (cargando) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center space-y-4 bg-[#171717] rounded-xl border border-zinc-800">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+        <div className="space-y-2">
+          <h3 className="text-xl font-semibold text-white">Conectando con el motor de inversiones...</h3>
+          <p className="text-xs text-zinc-400 max-w-md mx-auto leading-relaxed">
+            Nota: El backend utiliza una capa gratuita en la nube. Si es la primera carga tras un periodo de inactividad, el servidor puede tardar hasta 60 segundos en iniciar. Agradezco tu paciencia.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-surface p-8 rounded-2xl border border-white/5 mt-8 shadow-lg relative overflow-hidden flex flex-col gap-8">
