@@ -1,55 +1,51 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
+import HeroDual from '../components/HeroDual.jsx';
+import TechMatrix from '../components/TechMatrix.jsx';
+import ExperienceTimeline from '../components/ExperienceTimeline.jsx';
 
 const proyectos = await getCollection('proyectos');
 ---
 
 <Layout>
-    <main class="max-w-4xl mx-auto p-8 mt-12">
-        <header class="mb-10">
-            <div class="inline-block mb-4 px-3 py-1 bg-surface border border-white/10 rounded-md">
-                <code class="font-mono text-sm text-accent">
-                    > system.environment === "production"
-                </code>
-            </div>
-            <h1 class="text-5xl md:text-6xl font-bold mb-6 text-white font-sans tracking-tight">
-                Ingeniero de Software <br><span class="text-accent">Full Stack</span><br>
-            </h1>
-            <p class="text-xl text-text max-w-2xl leading-relaxed">
-                Especializado en Arquitecturas Limpias, Sistemas Distribuidos y APIs Seguras. 
-                Construyendo soluciones escalables de alto rendimiento.
-            </p>
-        </header>
+    {/* Componente Dual */}
+    <HeroDual client:load />
 
-        <section>
+    {/* Contenedor principal */}
+    <main class="w-full max-w-4xl mx-auto px-5 md:px-8 py-8 mt-4">
+        
+        {/* Matriz de Tecnologías */}
+        <TechMatrix client:load />
+
+        {/* Sección de Casos de Estudio */}
+        <section class="mt-8">
             <h2 class="text-2xl font-semibold mb-8 border-b border-white/10 pb-4 text-white flex items-center gap-2">
-                <span class="text-accent font-mono text-lg">01.</span> Casos de Estudio
+                <span class="text-accent font-mono text-lg">02.</span> Casos de Estudio
             </h2>
             
             <div class="grid gap-8">
                 {proyectos.map((proyecto) => (
-                    <a href={`/proyectos/${proyecto.id}`} class="block group">
-                        <article class="bg-surface p-8 rounded-2xl border border-white/5 group-hover:border-accent transition-all duration-300 shadow-lg group-hover:shadow-accent/5 h-full relative overflow-hidden">
-                            
+                    <a href={`/proyectos/${proyecto.id}`} class="block group w-full">
+                        <article class="bg-surface p-6 md:p-8 rounded-2xl border border-white/5 group-hover:border-accent transition-all duration-300 shadow-lg group-hover:shadow-accent/5 h-full relative overflow-hidden w-full">
                             <div class="absolute inset-0 bg-gradient-to-r from-accent/0 via-accent/5 to-accent/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-
-                            <div class="flex justify-between items-start mb-4 relative z-10">
-                                <h3 class="text-2xl font-bold text-white font-sans group-hover:text-accent transition-colors">
+                            
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4 relative z-10">
+                                <h3 class="text-2xl font-bold text-white font-sans group-hover:text-accent transition-colors leading-tight">
                                     {proyecto.data.title}
                                 </h3>
-                                <span class="bg-accent/10 text-accent font-mono text-xs px-3 py-1 rounded-full border border-accent/20">
+                                <span class="bg-accent/10 text-accent font-mono text-xs px-3 py-1 rounded-full border border-accent/20 shrink-0 mt-1 sm:mt-0 inline-block w-fit">
                                     {proyecto.data.status}
                                 </span>
                             </div>
                             
-                            <p class="text-text mb-6 leading-relaxed text-lg relative z-10">
+                            <p class="text-text mb-6 leading-relaxed text-base md:text-lg relative z-10">
                                 {proyecto.data.description}
                             </p>
                             
-                            <div class="flex flex-wrap gap-3 relative z-10">
+                            <div class="flex flex-wrap gap-2 relative z-10">
                                 {proyecto.data.tech.map((tecnologia) => (
-                                    <span class="bg-background text-text font-mono text-sm px-4 py-1.5 rounded-lg border border-white/10">
+                                    <span class="bg-background text-gray-300 font-mono text-xs md:text-sm px-3 py-1.5 rounded-lg border border-white/10">
                                         {tecnologia}
                                     </span>
                                 ))}
@@ -59,5 +55,9 @@ const proyectos = await getCollection('proyectos');
                 ))}
             </div>
         </section>
+
+        {/* Línea de Tiempo de Experiencia */}
+        <ExperienceTimeline client:load />
+
     </main>
 </Layout>
