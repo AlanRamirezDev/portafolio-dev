@@ -17,6 +17,14 @@ Para resolver este desafío de manera integral, se diseñó e integró un ecosis
 
 2. **Frontend (Panel Administrativo IAM):** Una interfaz reactiva integrada dentro de Astro utilizando componentes de React bajo la arquitectura de islas. Este dashboard simula un centro de control de accesos, consume la API REST del backend inyectando los tokens correspondientes, gestiona estados de autorización y provee una bitácora en tiempo real de las acciones y flujos de red.
 
+## Guía de Pruebas (RBAC)
+
+El Sandbox incluye tres perfiles preconfigurados para evaluar las restricciones del middleware:
+
+* **Administrador:** Acceso total. Puede crear/eliminar usuarios e inyectar tráfico de prueba.
+* **Auditor:** Acceso de solo lectura. Puede visualizar la bitácora inmutable, pero no puede alterar registros.
+* **Operador:** Acceso denegado. Perfil básico sin privilegios para interactuar con los módulos administrativos.
+
 ### Fragmento de Implementación
 
 ```php
