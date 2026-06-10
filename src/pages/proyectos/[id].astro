@@ -46,6 +46,14 @@ const { Content } = await render(proyecto);
           </a>
         </div>
       )}
+
+      {proyecto.id === 'iam-dashboard' && (
+        <div class="mb-4">
+          <a href="/sandbox-iam" class="inline-flex items-center gap-2 bg-accent text-background font-bold px-4 py-2 rounded-lg hover:bg-accent/80 transition-colors shadow-sm text-sm">
+            🛡️ Probar Panel IAM en Vivo
+          </a>
+        </div>
+      )}
     </header>
 
     <article class="prose prose-invert prose-headings:font-sans prose-headings:text-white prose-p:text-text prose-a:text-accent hover:prose-a:text-accent/80 prose-code:font-mono prose-code:text-accent prose-pre:bg-surface prose-pre:border prose-pre:border-white/10 max-w-none">

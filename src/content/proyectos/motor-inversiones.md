@@ -13,34 +13,32 @@ En plataformas de inversión, procesar inyecciones de capital programadas y conv
 
 Para resolver este desafío de manera integral, se diseñó e integró un ecosistema de dos capas completamente independiente pero sincronizado:
 
-1. **Backend (Motor de Inversión):** Arquitectura limpia basada en Spring Boot 3. El motor aísla la lógica de negocio de las integraciones externas y asegura propiedades ACID mediante el manejo estricto del contexto transaccional. Para la conversión de MXN a USDC, se implementó un bloqueo pesimista a nivel de base de datos (`PESSIMISTIC_WRITE` en JPA/PostgreSQL) para evitar condiciones de carrera durante inyecciones concurrentes.
+1. **Backend (Motor de Inversión):** Arquitectura limpia basada en Spring Boot 3. El motor aísla la lógica de negocio de las integraciones externas y asegura propiedades ACID mediante el manejo estricto del contexto transaccional (`@Transactional`). Para garantizar la integridad financiera en las conversiones de divisas, se utilizó aritmética de precisión arbitraria (`BigDecimal`) con políticas de redondeo estrictas (`RoundingMode.HALF_UP`), evitando la pérdida de centavos típica con decimales.
 
 2. **Frontend (Sandbox Interactivo):** Una SPA reactiva integrada dentro de Astro utilizando componentes de React. Este tablero simula una terminal financiera real, consume la API REST del backend de forma asíncrona, gestiona estados defensivos frente a caídas del servidor y provee un log en tiempo real de los flujos de red (HTTP Requests/Responses).
 
 ### Fragmento de Implementación
 
 ```java
-@Service
-@RequiredArgsConstructor
-public class CurrencyConversionService {
+    @Transactional
+    public Portafolio comprarUsdc(Long usuarioId, BigDecimal montoMxn, BigDecimal tipoCambio) {
+        if (montoMxn.compareTo(BigDecimal.ZERO) <= 0 || tipoCambio.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("El monto y el tipo de cambio deben ser mayores a cero.");
+        }
 
-    private final PortfolioRepository portfolioRepository;
-    private final ExchangeRateClient exchangeRateClient;
+        Portafolio portafolio = obtenerPortafolio(usuarioId);
 
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public ConversionResult executeConversion(Long userId, BigDecimal amountMxn) {
-        // Bloqueo pesimista para evitar colisiones durante inyecciones concurrentes
-        Portfolio portfolio = portfolioRepository.findByIdForUpdate(userId)
-            .orElseThrow(() -> new PortfolioNotFoundException(userId));
+        if (portafolio.getBalanceMxn().compareTo(montoMxn) < 0) {
+            throw new IllegalStateException("Saldo insuficiente para realizar la compra.");
+        }
 
-        portfolio.deductBalance(Currency.MXN, amountMxn);
-        
-        BigDecimal currentRate = exchangeRateClient.getRate(Currency.MXN, Currency.USDC);
-        BigDecimal amountUsdc = amountMxn.multiply(currentRate);
-        
-        portfolio.addBalance(Currency.USDC, amountUsdc);
-        portfolioRepository.save(portfolio);
+        BigDecimal nuevoBalanceMxn = portafolio.getBalanceMxn().subtract(montoMxn);
+        portafolio.setBalanceMxn(nuevoBalanceMxn);
 
-        return new ConversionResult(amountMxn, amountUsdc, currentRate);
+        BigDecimal usdcComprados = montoMxn.divide(tipoCambio, 4, RoundingMode.HALF_UP);
+
+        BigDecimal nuevoBalanceUsdc = portafolio.getBalanceUsdc().add(usdcComprados);
+        portafolio.setBalanceUsdc(nuevoBalanceUsdc);
+
+        return portafolioRepository.save(portafolio);
     }
-}

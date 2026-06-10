@@ -156,7 +156,7 @@ export default function SimuladorInversiones() {
         <div className="space-y-2">
           <h3 className="text-xl font-semibold text-white">Conectando con el motor de inversiones...</h3>
           <p className="text-xs text-zinc-400 max-w-md mx-auto leading-relaxed">
-            Nota: El backend utiliza una capa gratuita en la nube. Si es la primera carga tras un periodo de inactividad, el servidor puede tardar hasta 60 segundos en iniciar. Agradezco tu paciencia.
+            ⏳ Nota: El backend utiliza una capa gratuita en la nube. Si es la primera carga tras un periodo de inactividad, el servidor puede tardar hasta 60 segundos en iniciar. Agradezco tu paciencia.
           </p>
         </div>
       </div>
