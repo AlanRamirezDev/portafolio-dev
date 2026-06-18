@@ -211,30 +211,28 @@ export default function LogiflowDashboard() {
                 try {
                     const response = await axios.get(`${API_BASE_URL}/api/v1/etl/status`);
                     const count = response.data.processedRecords;
+                    const isRunning = response.data.isRunning;
+                    
                     setProcessedRecords(count);
 
                     if (count >= totalRecords && totalRecords > 0) {
                         setStatus('success');
                         clearInterval(pollInterval);
                     } 
-                    else if (count === lastCount) {
+                    else if (!isRunning) {
                         stagnantPings++;
-                        
-                        const maxTolerance = (count === 0) ? 10 : 60;
-                        
-                        if (stagnantPings > maxTolerance) {
+                        if (stagnantPings > 5) {
                             setStatus('format_error');
                             clearInterval(pollInterval);
                         }
                     } 
                     else {
-                        lastCount = count;
                         stagnantPings = 0;
                     }
                 } catch (error) {
                     console.error("Error crítico de red consultando el estado:", error);
-                    setStatus('error');
-                    clearInterval(pollInterval);
+                    setStatus('error'); 
+                    clearInterval(pollInterval); 
                 }
             }, 1000);
         }
