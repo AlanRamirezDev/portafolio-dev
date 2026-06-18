@@ -169,6 +169,13 @@ export default function LogiflowDashboard() {
             return;
         }
 
+        const MAX_FILE_SIZE_MB = 5;
+        if (selectedFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+            setFileError(`Archivo demasiado grande (${(selectedFile.size / (1024*1024)).toFixed(1)}MB). Por restricciones de memoria en esta Demo, el límite es ${MAX_FILE_SIZE_MB}MB.`);
+            if (fileInputRef.current) fileInputRef.current.value = ''; 
+            return;
+        }
+
         try {
             const text = await selectedFile.text();
             const lines = text.split('\n').filter(line => line.trim().length > 0).length - 1;
@@ -446,10 +453,13 @@ export default function LogiflowDashboard() {
                     {status === 'preparing' && (
                         <div className="flex flex-col justify-center items-center h-full min-h-[300px] gap-6 flex-1">
                             <div className="w-16 h-16 border-4 border-white/10 border-t-accent rounded-full animate-spin"></div>
-                            <div className="text-center">
+                            <div className="text-center px-4">
                                 <p className="text-white font-bold text-lg mb-1">Preparando entorno de base de datos...</p>
-                                <p className="text-accent font-mono text-sm mb-4">Por favor espere...</p>
-                                <p className="text-text font-mono text-sm animate-pulse mb-2">Limpiando la base para iniciar la demostración.</p>
+                                <p className="text-text font-mono text-sm mb-6">Limpiando la base para iniciar la demostración.</p>
+                                <p className="text-accent font-mono text-sm mb-4 animate-pulse">Por favor espere...</p>
+                                <p className="text-xs text-zinc-400 max-w-md mx-auto leading-relaxed animate-pulse">
+                                    ⏳ Nota: El backend utiliza una capa gratuita en la nube. Si es la primera carga tras un periodo de inactividad, el servidor puede tardar hasta 60 segundos en iniciar. Agradezco tu paciencia.
+                                </p>
                             </div>
                         </div>
                     )}
