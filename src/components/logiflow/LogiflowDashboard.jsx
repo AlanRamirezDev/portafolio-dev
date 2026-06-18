@@ -99,7 +99,9 @@ export default function LogiflowDashboard() {
     const [previewData, setPreviewData] = useState(null);
     const [logs, setLogs] = useState([
         { id: 1, hora: new Date().toLocaleTimeString(), tipo: 'info', mensaje: 'Conexión segura establecida con la base de datos.' },
-        { id: 2, hora: new Date().toLocaleTimeString(), tipo: 'info', mensaje: 'Escribe una consulta SQL o utiliza el botón superior para generar una automática.' }
+        { id: 2, hora: new Date().toLocaleTimeString(), tipo: 'success', mensaje: 'INFO: Tabla principal detectada -> logiflow_telemetry' },
+        { id: 3, hora: new Date().toLocaleTimeString(), tipo: 'success', mensaje: 'INFO: Columnas -> trip_id, vehicle_vin, driver_id, timestamp_utc, odometer_km, fuel_consumed_l, vehicle_status, route_code' },
+        { id: 4, hora: new Date().toLocaleTimeString(), tipo: 'info', mensaje: 'Escribe una consulta SQL o utiliza los comandos de prueba rápida para evaluar la seguridad del sistema.' }
     ]);
     const [isQuerying, setIsQuerying] = useState(false);
     const [terminalInput, setTerminalInput] = useState('');
@@ -308,54 +310,62 @@ export default function LogiflowDashboard() {
     };
 
     // FLUJO 2: Terminal Interactiva
+    const ejecutarConsultaRapida = async (queryText) => {
+        await procesarConsulta(queryText);
+    };
+
     const handleTerminalSubmit = async (e) => {
         if (e.key === 'Enter') {
             const query = terminalInput.trim();
             if (!query) return;
-
-            addLog('info', `>_ ${query}`);
-            setTerminalInput(''); 
-            setIsQuerying(true);
-
-            const upperQuery = query.toUpperCase();
-
-            if (upperQuery.includes('DROP') || upperQuery.includes('DELETE') || upperQuery.includes('TRUNCATE') || upperQuery.includes('UPDATE') || upperQuery.includes('INSERT')) {
-                addLog('error', '[SECURITY ALERT] Consulta no permitida o posible inyección SQL destructiva detectada. Petición bloqueada por reglas de seguridad.');
-                setIsQuerying(false);
-                return;
-            }
-
-            if (!upperQuery.startsWith('SELECT')) {
-                addLog('warning', 'Restricción de RBAC: Su perfil solo tiene permisos de lectura (SELECT) en este entorno.');
-                setIsQuerying(false);
-                return;
-            }
-
-            try {
-                const response = await axios.post(`${API_BASE_URL}/api/v1/etl/query`, { query: query });
-                const data = response.data;
-                
-                if (data.length === 0) {
-                    addLog('warning', 'Consulta ejecutada. (0 filas devueltas)');
-                } else {
-                    addLog('success', `Consulta exitosa. Retornando ${data.length} registros en consola:`);
-
-                    data.forEach(row => {
-                        const rowString = Object.entries(row)
-                            .map(([key, value]) => `${key}: ${value}`)
-                            .join(' | ');
-                        addLog('success', `>> { ${rowString} }`);
-                    });
-                }
-            } catch (error) {
-                if (error.response && error.response.data && error.response.data.error) {
-                    addLog('error', `[DB ERROR] ${error.response.data.error}`);
-                } else {
-                    addLog('error', 'Error ejecutando consulta: Conexión rechazada o timeout de BD.');
-                }
-            }
-            setIsQuerying(false);
+            
+            setTerminalInput('');
+            await procesarConsulta(query);
         }
+    };
+
+    const procesarConsulta = async (queryText) => {
+        addLog('info', `>_ ${queryText}`);
+        setIsQuerying(true);
+
+        const upperQuery = queryText.toUpperCase();
+
+        if (upperQuery.includes('DROP') || upperQuery.includes('DELETE') || upperQuery.includes('TRUNCATE') || upperQuery.includes('ALTER')) {
+            addLog('error', '[SECURITY ALERT] Consulta no permitida o posible inyección SQL destructiva detectada. Petición bloqueada por reglas de seguridad.');
+            setIsQuerying(false);
+            return;
+        }
+
+        if (!upperQuery.startsWith('SELECT')) {
+            addLog('warning', 'Restricción de RBAC: Su perfil solo tiene permisos de lectura (SELECT) en este entorno.');
+            setIsQuerying(false);
+            return;
+        }
+
+        try {
+            const response = await axios.post(`${API_BASE_URL}/api/v1/etl/query`, { query: queryText });
+            const data = response.data;
+            
+            if (data.length === 0) {
+                addLog('warning', 'Consulta ejecutada. (0 filas devueltas)');
+            } else {
+                addLog('success', `Consulta exitosa. Retornando ${data.length} registros en consola:`);
+
+                data.forEach(row => {
+                    const rowString = Object.entries(row)
+                        .map(([key, value]) => `${key}: ${value}`)
+                        .join(' | ');
+                    addLog('success', `>> { ${rowString} }`);
+                });
+            }
+        } catch (error) {
+            if (error.response && error.response.data && error.response.data.error) {
+                addLog('db_error', `[DB ERROR] ${error.response.data.error}`);
+            } else {
+                addLog('error', 'Error ejecutando consulta: Conexión rechazada o timeout de BD.');
+            }
+        }
+        setIsQuerying(false);
     };
 
     const progressPercentage = totalRecords > 0 ? Math.min((processedRecords / totalRecords) * 100, 100).toFixed(0) : 0;
@@ -548,6 +558,23 @@ export default function LogiflowDashboard() {
                                         * Consola interactuando directo con el servidor.
                                     </span>
                                 </div>
+
+                                {/* BOTONES DE PRUEBA RÁPIDA */}
+                                <div className="flex flex-wrap gap-2 mb-3">
+                                    <span className="text-[10px] font-mono text-gray-500 flex items-center mr-1">Casos de prueba:</span>
+                                    <button onClick={() => ejecutarConsultaRapida("SELECT vehicle_status, COUNT(*) FROM logiflow_telemetry GROUP BY vehicle_status;")} className="text-[10px] font-mono bg-surface hover:bg-green-500/20 text-green-400/70 px-2 py-1 rounded border border-green-500/20 transition-colors">
+                                        📊 CONSULTA SIMPLE
+                                    </button>
+                                    <button onClick={() => ejecutarConsultaRapida("INSERT INTO logiflow_telemetry (trip_id) VALUES ('TRIP-999');")} className="text-[10px] font-mono bg-surface hover:bg-yellow-500/20 text-yellow-500/70 px-2 py-1 rounded border border-yellow-500/20 transition-colors">
+                                        🛡️ PROBAR RBAC
+                                    </button>
+                                    <button onClick={() => ejecutarConsultaRapida("DROP TABLE logiflow_telemetry;")} className="text-[10px] font-mono bg-surface hover:bg-red-500/20 text-red-500/70 px-2 py-1 rounded border border-red-500/20 transition-colors">
+                                        💥 PROBAR WAF
+                                    </button>
+                                    <button onClick={() => ejecutarConsultaRapida("SELECT * FROM tabla_fantasma;")} className="text-[10px] font-mono bg-surface hover:bg-orange-500/20 text-orange-400/70 px-2 py-1 rounded border border-orange-500/20 transition-colors">
+                                        ⚠️ ERROR SINTAXIS
+                                    </button>
+                                </div>
                                 
                                 <div className="bg-[#0a0a0a] rounded-t-lg border border-white/5 border-b-0 font-mono text-xs overflow-y-auto h-32 flex flex-col shadow-inner">
                                     <div className="p-4 flex flex-col">
@@ -559,6 +586,7 @@ export default function LogiflowDashboard() {
                                                     ${log.tipo === 'error' ? 'text-red-400' : ''}
                                                     ${log.tipo === 'warning' ? 'text-yellow-400' : ''}
                                                     ${log.tipo === 'info' ? 'text-accent' : ''}
+                                                    ${log.tipo === 'db_error' ? 'text-orange-400' : ''}
                                                 `}>
                                                     {log.mensaje}
                                                 </span>
