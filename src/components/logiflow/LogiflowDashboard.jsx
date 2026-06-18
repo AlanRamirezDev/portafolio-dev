@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.PROD 
-  ? 'https://logiflow-api.onrender.com'  // Cambiar después
+  ? 'https://logiflow-api-fx7o.onrender.com'
   : 'http://localhost:8081';
 
 // Minijuego Demo
