@@ -514,7 +514,7 @@ export default function LogiflowDashboard() {
                                     <button 
                                         onClick={handleInitialQuery}
                                         disabled={isQuerying}
-                                        className="bg-surface border border-white/10 text-white font-mono text-sm px-6 py-2 rounded-lg hover:border-accent hover:text-accent transition-colors shadow-sm flex items-center gap-2 disabled:opacity-50"
+                                        className="text-sm font-mono bg-surface hover:bg-accent/10 text-accent/80 px-5 py-2 rounded border border-accent/30 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         🔍 {isQuerying ? 'Consultando...' : 'Generar consulta automática (5 registros)'}
                                     </button>

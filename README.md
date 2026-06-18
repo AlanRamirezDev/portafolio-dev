@@ -30,6 +30,13 @@ Sistema de control de seguridad integrado al Hub mediante enrutamiento aislado y
 * **Auditoría Inmutable:** Registro permanente de acciones, direcciones IP y cargas útiles en PostgreSQL, expuesto a perfiles de auditoría en el panel de control.
 * **Experiencia Integrada:** Componentes de autenticación y paneles administrativos desarrollados en React, respetando el diseño global del Hub pero operando como una aplicación de una sola página (SPA) fluida.
 
+### 3. Pipeline ETL Logístico: Motor de Ingesta Asíncrona
+Microservicio de alto rendimiento integrado al Hub para demostrar el procesamiento masivo de archivos y resiliencia de datos.
+* **Procesamiento por Lotes y Concurrencia:** Desarrollado con Spring Batch y Virtual Threads (Java 21) para ingerir miles de registros transaccionales en PostgreSQL sin bloquear el hilo principal, manteniendo la interfaz reactiva (`202 Accepted`).
+* **Resiliencia y Tolerancia a Fallos:** Implementación estricta de políticas `SkipPolicy` para encapsular y descartar de forma estructurada datos corruptos, asegurando que los fallos aislados no detengan la carga del lote.
+* **Sincronización Inteligente de Red:** Frontend defensivo que consulta activamente la salud del motor backend, implementando tolerancias de latencia dinámicas para mitigar los retrasos de red en la nube.
+* **Terminal SQL y Simulador WAF/RBAC:** Consola interactiva embebida con acciones rápidas que evalúa la robustez del sistema filtrando inyecciones SQL destructivas y bloqueando peticiones fuera de los roles permitidos.
+
 ---
 
 ## 🛠️ Comandos de Desarrollo

@@ -1,7 +1,7 @@
 ---
 title: "Motor Transaccional para Inversiones"
 description: "Ecosistema Fullstack para la gestión de portafolios financieros en tiempo real, con un simulador interactivo e inyección automática de capital."
-tech: ["Java 21", "Spring Boot 3", "PostgreSQL (Neon)", "React", "Astro", "Docker"]
+tech: ["Java 21", "Spring Boot 3", "PostgreSQL", "React", "Astro", "Docker"]
 status: "Completado"
 ---
 
