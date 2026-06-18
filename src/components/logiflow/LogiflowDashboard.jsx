@@ -56,15 +56,15 @@ const SimuladorDespacho = () => {
         <div className="relative w-full flex-1 min-h-[250px] bg-background border border-white/10 rounded-xl overflow-hidden mt-6 cursor-crosshair shadow-inner">
             
             {/* PUNTUACIÓN */}
-            <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-surface px-3 py-1 rounded-md text-sm font-mono text-white border border-white/5 z-10 shadow-sm flex items-center gap-4 whitespace-nowrap">
-                <span>Puntos: <span className="text-accent font-bold">{score}</span></span>
-                <span className="text-xs text-text border-l border-white/10 pl-4 hidden sm:inline-block"> 🚚/🚙 Normal: 10pts | 🚑​ Urgente: 50pts</span>
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-surface px-4 py-2 rounded-full text-sm font-mono text-white border border-white/5 z-10 shadow-sm flex items-center justify-center gap-4 w-auto max-w-[90%]">
+                <span className="whitespace-nowrap flex-shrink-0">Puntos: <span className="text-accent font-bold text-base">{score}</span></span>
+                <span className="text-xs text-text border-l border-white/10 pl-4 hidden sm:block whitespace-nowrap overflow-hidden text-ellipsis">🚚/🚙 Normal:10 | 🚑 Urgente:50</span>
             </div>
 
-            <div className="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
-                <p className="text-white font-sans text-center px-4">
-                    Intercepta los vehículos en movimiento <br/>
-                    <span className="text-sm text-text">Demostración de UI responsiva ininterrumpida durante carga masiva de información</span>
+            <div className="absolute inset-0 flex items-center justify-center pt-12 sm:pt-0 opacity-30 pointer-events-none">
+                <p className="text-white font-sans text-center px-4 text-xs sm:text-sm">
+                    <strong>Intercepta los vehículos en movimiento</strong> <br/>
+                    <span className="text-[10px] sm:text-sm text-text">Demostración ininterrumpida durante carga masiva de información</span>
                 </p>
             </div>
             {trucks.map(truck => (
@@ -222,7 +222,9 @@ export default function LogiflowDashboard() {
                         stagnantPings = 0;
                     }
                 } catch (error) {
-                    console.error("Error consultando el estado:", error);
+                    console.error("Error crítico de red consultando el estado:", error);
+                    setStatus('error');
+                    clearInterval(pollInterval);
                 }
             }, 1000);
         }
@@ -322,19 +324,27 @@ export default function LogiflowDashboard() {
             }
 
             try {
-                const response = await axios.get(`${API_BASE_URL}/api/v1/etl/preview`);
+                const response = await axios.post(`${API_BASE_URL}/api/v1/etl/query`, { query: query });
                 const data = response.data;
                 
                 if (data.length === 0) {
                     addLog('warning', 'Consulta ejecutada. (0 filas devueltas)');
                 } else {
-                    addLog('success', `Consulta exitosa. Retornando muestra de ${data.length} registros en consola:`);
+                    addLog('success', `Consulta exitosa. Retornando ${data.length} registros en consola:`);
+
                     data.forEach(row => {
-                        addLog('success', `>> [${row.tripId}] VIN: ${row.vehicleVin} | ODO: ${row.odometerKm}km | ESTADO: ${row.vehicleStatus}`);
+                        const rowString = Object.entries(row)
+                            .map(([key, value]) => `${key}: ${value}`)
+                            .join(' | ');
+                        addLog('success', `>> { ${rowString} }`);
                     });
                 }
             } catch (error) {
-                addLog('error', 'Error ejecutando consulta: Conexión rechazada o timeout de BD.');
+                if (error.response && error.response.data && error.response.data.error) {
+                    addLog('error', `[DB ERROR] ${error.response.data.error}`);
+                } else {
+                    addLog('error', 'Error ejecutando consulta: Conexión rechazada o timeout de BD.');
+                }
             }
             setIsQuerying(false);
         }
@@ -417,10 +427,10 @@ export default function LogiflowDashboard() {
                                 ) : (
                                     <div className="flex flex-col items-center gap-4 mt-4">
                                         <span className="text-4xl text-accent">📁</span>
-                                        <div>
-                                            <p className="text-white font-bold text-lg truncate max-w-xs">{file.name}</p>
-                                            <p className="text-text text-sm">
-                                                {(file.size / (1024 * 1024)).toFixed(2)} MB detectados &bull; <span className="text-accent">{totalRecords.toLocaleString()} registros</span>
+                                        <div className="w-full max-w-[200px] sm:max-w-xs px-2 text-center">
+                                            <p className="text-white font-bold text-lg truncate w-full" title={file.name}>{file.name}</p>
+                                            <p className="text-text text-sm truncate w-full">
+                                                {(file.size / (1024 * 1024)).toFixed(2)} MB &bull; <span className="text-accent">{totalRecords.toLocaleString()} reg.</span>
                                             </p>
                                         </div>
                                         <div className="flex flex-wrap justify-center gap-3 mt-2">
@@ -438,8 +448,8 @@ export default function LogiflowDashboard() {
                             <div className="w-16 h-16 border-4 border-white/10 border-t-accent rounded-full animate-spin"></div>
                             <div className="text-center">
                                 <p className="text-white font-bold text-lg mb-1">Preparando entorno de base de datos...</p>
-                                <p className="text-text font-mono text-sm animate-pulse mb-6">Limpiando la base para iniciar la demostración.</p>
-                                <p className="text-text font-mono text-sm animate-pulse mb-6">¡No actualices la página o interrumpas el proceso mientras la carga se está realizando!</p>
+                                <p className="text-accent font-mono text-sm mb-4">Por favor espere...</p>
+                                <p className="text-text font-mono text-sm animate-pulse mb-2">Limpiando la base para iniciar la demostración.</p>
                             </div>
                         </div>
                     )}
@@ -460,6 +470,10 @@ export default function LogiflowDashboard() {
                             <div className="w-full bg-background rounded-full h-3 border border-white/10 overflow-hidden mb-2">
                                 <div className="bg-accent h-3 transition-all duration-300 ease-out" style={{ width: `${progressPercentage}%` }}></div>
                             </div>
+
+                            <p className="text-yellow-500 font-mono text-[10px] text-center animate-pulse -mb-2">
+                                ⚠️ Por favor, mantenga esta pestaña abierta hasta que finalice el proceso.
+                            </p>
                             
                             <SimuladorDespacho />
                         </div>
@@ -486,7 +500,7 @@ export default function LogiflowDashboard() {
                                 </div>
                             ) : (
                                 <div className="w-full bg-background border border-white/5 rounded-xl p-4 mb-6 overflow-hidden">
-                                    <p className="text-accent font-mono text-xs mb-3 text-left">Resultados de la consulta ejecutada:</p>
+                                    <p className="text-accent font-mono text-xs mb-3 text-left">Resultados de la consulta automática ejecutada:</p>
                                     <div className="overflow-x-auto custom-scrollbar">
                                         <table className="w-full text-left text-xs text-text font-mono">
                                             <thead className="bg-surface border-b border-white/5 text-white">
@@ -543,15 +557,18 @@ export default function LogiflowDashboard() {
                                     </div>
                                 </div>
                                 
-                                <div className="bg-[#111] rounded-b-lg border border-white/5 p-2 flex items-center gap-2">
-                                    <span className="text-green-400 font-mono text-sm ml-2">logiflow@db:~#</span>
+                                <div className="bg-[#111] rounded-b-lg border border-white/5 p-2 flex items-center gap-2 overflow-hidden w-full">
+                                    <span className="text-green-400 font-mono text-xs sm:text-sm ml-1 sm:ml-2 shrink-0">
+                                        <span className="hidden sm:inline">logiflow@db:~#</span>
+                                        <span className="sm:hidden">db:~#</span>
+                                    </span>
                                     <input 
                                         type="text" 
                                         value={terminalInput}
                                         onChange={(e) => setTerminalInput(e.target.value)}
                                         onKeyDown={handleTerminalSubmit}
                                         disabled={isQuerying}
-                                        className="bg-transparent border-none outline-none text-white font-mono text-sm flex-1 ml-2 disabled:opacity-50"
+                                        className="bg-transparent border-none outline-none text-white font-mono text-xs sm:text-sm flex-1 min-w-0 ml-1 sm:ml-2 disabled:opacity-50"
                                         placeholder="Escribe un SELECT válido..."
                                         spellCheck="false"
                                         autoComplete="off"
