@@ -219,7 +219,10 @@ export default function LogiflowDashboard() {
                     } 
                     else if (count === lastCount) {
                         stagnantPings++;
-                        if (stagnantPings > 5) {
+                        
+                        const maxTolerance = (count === 0) ? 10 : 60;
+                        
+                        if (stagnantPings > maxTolerance) {
                             setStatus('format_error');
                             clearInterval(pollInterval);
                         }
@@ -458,7 +461,7 @@ export default function LogiflowDashboard() {
                                 <p className="text-text font-mono text-sm mb-6">Limpiando la base para iniciar la demostración.</p>
                                 <p className="text-accent font-mono text-sm mb-4 animate-pulse">Por favor espere...</p>
                                 <p className="text-xs text-zinc-400 max-w-md mx-auto leading-relaxed animate-pulse">
-                                    ⏳ Nota: El backend utiliza una capa gratuita en la nube. Si es la primera carga tras un periodo de inactividad, el servidor puede tardar hasta 60 segundos en iniciar. Agradezco tu paciencia.
+                                    ⏳ Nota: El backend utiliza una capa gratuita en la nube. Si es la primera carga o la base contiene demasiados registros previos, el servidor en la nube puede tardar hasta 60 segundos en arrancar y purgar los datos. Agradezco tu paciencia.
                                 </p>
                             </div>
                         </div>
