@@ -1,0 +1,30 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ReporteriaDashboard from '../../components/reporteria/ReporteriaDashboard.jsx';
+---
+
+<Layout title="Motor de Reportería | Portafolio">
+  <main class="max-w-4xl mx-auto p-8 mt-4">
+    
+    <a href="/" class="text-accent hover:text-accent/80 mb-8 inline-flex items-center gap-2 font-mono text-sm transition-colors">
+      <span>&lt;-</span> Volver al inicio
+    </a>
+
+    <header class="mb-12 border-b border-white/10 pb-8">
+      <div class="inline-block mb-4 px-3 py-1 bg-surface border border-white/10 rounded-md">
+        <code class="font-mono text-sm text-accent">
+          > core_service === "stateless_reporter"
+        </code>
+      </div>
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-6 font-sans tracking-tight">
+        Motor de Artefactos y Reportería
+      </h1>
+      <p class="text-xl text-text leading-relaxed max-w-3xl">
+        Demostración de generación de archivos binarios en tiempo real. El frontend en Astro/React empaqueta cargas estructuradas en JSON y las transmite hacia un microservicio aislado en Laravel para su procesamiento en memoria.
+      </p>
+    </header>
+
+    <ReporteriaDashboard client:load />
+
+  </main>
+</Layout>

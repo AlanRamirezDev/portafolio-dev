@@ -1,5 +1,5 @@
 ---
-title: "Motor ETL Asíncrono"
+title: "Pipeline de Ingesta Asíncrona (ETL)"
 description: "Microservicio de alto rendimiento para la ingesta masiva de telemetría logística. Arquitectura tolerante a fallos con procesamiento por lotes (chunks) y concurrencia optimizada."
 tech: ["Java 21", "Spring Boot 3", "Spring Batch", "PostgreSQL (Neon)", "React", "Astro", "Tailwind CSS"]
 status: "Completado"
