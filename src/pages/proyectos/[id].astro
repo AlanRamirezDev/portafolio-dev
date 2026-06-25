@@ -42,7 +42,7 @@ const { Content } = await render(proyecto);
       {proyecto.id === 'motor-inversiones' && (
         <div class="mb-4">
           <a href="/sandbox" class="inline-flex items-center gap-2 bg-accent text-background font-bold px-4 py-2 rounded-lg hover:bg-accent/80 transition-colors shadow-sm text-sm">
-            🚀 Probar Sandbox en Vivo
+            🚀 Probar Motor en Vivo
           </a>
         </div>
       )}
@@ -53,12 +53,20 @@ const { Content } = await render(proyecto);
             🛡️ Probar Panel IAM en Vivo
           </a>
         </div>
-        )}
+      )}
 
       {proyecto.id === 'logiflow-etl' && (
         <div class="mb-4">
           <a href="/logiflow" class="inline-flex items-center gap-2 bg-accent text-background font-bold px-4 py-2 rounded-lg hover:bg-accent/80 transition-colors shadow-sm text-sm">
-            ⚡ Probar Motor ETL en Vivo
+            ⚡ Probar Pipeline ETL en Vivo
+          </a>
+        </div>
+      )}
+
+      {proyecto.id === 'api-reporteria' && (
+        <div class="mb-4">
+          <a href="/reporteria" class="inline-flex items-center gap-2 bg-accent text-background font-bold px-4 py-2 rounded-lg hover:bg-accent/80 transition-colors shadow-sm text-sm">
+            📄 Probar Generador en Vivo
           </a>
         </div>
       )}
