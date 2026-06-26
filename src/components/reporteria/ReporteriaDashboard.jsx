@@ -1,15 +1,8 @@
 import { useState } from 'react';
 import reporteriaApi from '../../lib/reporteriaApi';
 
-export default function ReporteriaDashboard() {
-    const [isGenerating, setIsGenerating] = useState(false);
-    const [error, setError] = useState(null);
-    const [downloadCount, setDownloadCount] = useState(0);
-    const [lastAction, setLastAction] = useState(null);
-    const [serverStatus, setServerStatus] = useState('offline');
-
     // Datos demo para el backend
-    const [transactionsData, setTransactionsData] = useState([
+    const initialDemoData = [
         { id: 'TXN-001', monto: 2868.60, estado: 'Aprobado', detalle: 'Conversión MXN a BTC' },
         { id: 'TXN-002', monto: 5000.00, estado: 'Pendiente', detalle: 'Fondeo programado Cetes' },
         { id: 'TXN-003', monto: 1500.00, estado: 'Aprobado', detalle: 'Liquidación USDC' },
@@ -25,7 +18,17 @@ export default function ReporteriaDashboard() {
         { id: 'TXN-013', monto: 990.00, estado: 'Aprobado', detalle: 'Mensualidad de seguro' },
         { id: 'TXN-014', monto: 2100.00, estado: 'Rechazado', detalle: 'Cargo internacional declinado' },
         { id: 'TXN-015', monto: 600.00, estado: 'Aprobado', detalle: 'Retiro en cajero automático' },
-    ]);
+    ];
+
+    export default function ReporteriaDashboard() {
+        const [isGenerating, setIsGenerating] = useState(false);
+        const [error, setError] = useState(null);
+        const [downloadCount, setDownloadCount] = useState(0);
+        const [lastAction, setLastAction] = useState(null);
+        const [serverStatus, setServerStatus] = useState('offline');
+        
+        const [transactionsData, setTransactionsData] = useState(initialDemoData);
+        const [isCustomData, setIsCustomData] = useState(false);
 
     // Función para despertar el servidor (backend)
     const wakeUpServer = async () => {
@@ -86,6 +89,7 @@ export default function ReporteriaDashboard() {
             }
 
             setTransactionsData(parsedData);
+            setIsCustomData(true);
             setError(null);
         };
         reader.readAsText(file);
@@ -97,9 +101,9 @@ export default function ReporteriaDashboard() {
             return;
         }
 
-        if (downloadCount >= 3) {
+        if (downloadCount >= 5) {
             setError(
-                "Nota: Por la naturaleza de esta demo, la generación de reportes está limitada a 3 descargas por sesión para proteger la memoria del servidor. En un entorno de producción, este límite sería gestionado en el API Gateway."
+                "Nota: Por la naturaleza de esta demo, la generación de reportes está limitada a 5 descargas por sesión para proteger la memoria del servidor. En un entorno de producción, este límite sería gestionado en el API Gateway."
             );
             return;
         }
@@ -109,7 +113,14 @@ export default function ReporteriaDashboard() {
         setLastAction(formato);
 
         try {
-            const payload = { formato, data: { items: transactionsData } };
+            // Capturar la zona horaria nativa del sistema operativo/navegador del usuario
+            const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            
+            const payload = { 
+                formato, 
+                timezone: userTimezone,
+                data: { items: transactionsData } 
+            };
             const response = await reporteriaApi.post('/reportes/generar', payload, {
                 responseType: 'blob'
             });
@@ -166,7 +177,7 @@ export default function ReporteriaDashboard() {
                 {serverStatus === 'offline' ? (
                     <button 
                         onClick={wakeUpServer}
-                        className="flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 px-4 py-2 rounded-lg border border-red-500/30 transition-colors cursor-pointer group min-w-[220px]"
+                        className="flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 px-4 py-2 rounded-lg border border-red-500/30 transition-colors cursor-pointer group w-full sm:w-auto sm:min-w-[220px]"
                     >
                         <div className="relative flex h-3 w-3 shrink-0">
                             <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 group-hover:scale-110 transition-transform"></span>
@@ -174,7 +185,7 @@ export default function ReporteriaDashboard() {
                         <span className="text-xs font-mono text-red-400 uppercase tracking-wide">Encender Servidor</span>
                     </button>
                 ) : (
-                    <div className="flex items-center justify-center gap-2 bg-green-500/10 px-4 py-2 rounded-lg border border-green-500/30 min-w-[220px]">
+                    <div className="flex items-center justify-center gap-2 bg-green-500/10 px-4 py-2 rounded-lg border border-green-500/30 w-full sm:w-auto sm:min-w-[220px]">
                         <div className="relative flex h-3 w-3 shrink-0">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
@@ -231,11 +242,22 @@ export default function ReporteriaDashboard() {
 
             {/* Manejador de Errores */}
             {error && (
-                <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm font-mono leading-relaxed flex items-start gap-3">
-                    <svg className="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    {error}
+                <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm font-mono leading-relaxed flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                        <svg className="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <span>{error}</span>
+                    </div>
+                    <button 
+                        onClick={() => setError(null)} 
+                        className="text-red-400 hover:text-red-300 transition-colors shrink-0 p-1 rounded-md hover:bg-red-500/20 cursor-pointer"
+                        title="Descartar mensaje"
+                    >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
                 </div>
             )}
 
@@ -243,33 +265,60 @@ export default function ReporteriaDashboard() {
             <div className={`bg-surface border border-white/10 rounded-2xl p-6 shadow-lg transition-all duration-500 ${
                 serverStatus !== 'online' ? 'opacity-40 grayscale pointer-events-none' : ''
             }`}>
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-white/10 pb-3 gap-3">
-                    <h3 className="text-sm font-bold text-white uppercase tracking-wider opacity-80">
-                        Información Demo para procesar (JSON)
-                    </h3>
-                    <div className="flex items-center gap-2">
-                        <button 
-                            onClick={downloadTemplate}
-                            className="flex items-center gap-1.5 text-xs text-accent bg-accent/5 hover:bg-accent/10 border border-accent/20 px-3 py-1.5 rounded-md font-mono transition-colors cursor-pointer"
-                        >
-                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
-                            Plantilla (.CSV)
-                        </button>
-                        
-                        <label className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-3 py-1.5 rounded-md text-xs font-mono transition-colors cursor-pointer flex items-center gap-2">
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                            </svg>
-                            Cargar Datos
-                            <input 
-                                type="file" 
-                                accept=".csv" 
-                                className="hidden" 
-                                onChange={handleFileUpload} 
-                            />
-                        </label>
+                <div className="flex flex-col mb-6 border-b border-white/10 pb-4 gap-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-5">
+                    <div className="flex flex-col items-center gap-2 pt-1 w-full sm:w-auto">
+                            <h3 className="text-sm font-bold text-white uppercase tracking-wider opacity-90 text-center w-full">
+                                Información Demo a procesar (JSON)
+                            </h3>
+                            {isCustomData && (
+                                <span className="inline-flex items-center justify-center w-full sm:w-fit bg-accent/10 text-accent text-[10px] px-2.5 py-0.5 rounded-full border border-accent/20 font-bold tracking-wide text-center">
+                                    DATOS PERSONALIZADOS CARGADOS
+                                </span>
+                            )}
+                        </div>
+                        <div className="flex flex-col gap-2 w-full sm:w-auto">
+                            {/* Botón de Reset */}
+                            {isCustomData && (
+                                <button 
+                                    onClick={() => {
+                                        setTransactionsData(initialDemoData);
+                                        setIsCustomData(false);
+                                        setError(null);
+                                    }}
+                                    className="w-full flex justify-center items-center gap-1.5 text-xs text-slate-300 bg-slate-500/10 hover:bg-slate-500/20 border border-slate-500/30 px-3 py-2 rounded-md font-mono transition-colors cursor-pointer shadow-sm"
+                                >
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    Restaurar Datos Originales
+                                </button>
+                            )}
+                            <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:justify-end">
+                                <button 
+                                    onClick={downloadTemplate}
+                                    className="w-full sm:w-auto justify-center flex items-center gap-1.5 text-xs text-accent bg-accent/5 hover:bg-accent/10 border border-accent/20 px-3 py-1.5 rounded-md font-mono transition-colors cursor-pointer"
+                                >
+                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                    Plantilla (.CSV)
+                                </button>
+                                
+                                <label className="w-full sm:w-auto justify-center bg-white/5 hover:bg-white/10 border border-white/10 text-white px-3 py-1.5 rounded-md text-xs font-mono transition-colors cursor-pointer flex items-center gap-2">
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                    </svg>
+                                    Cargar Datos
+                                    <input 
+                                        type="file" 
+                                        accept=".csv" 
+                                        className="hidden" 
+                                        onChange={handleFileUpload} 
+                                    />
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div className="overflow-x-auto">
@@ -308,7 +357,13 @@ export default function ReporteriaDashboard() {
                             })}
                         </tbody>
                     </table>
-                </div>
+                </div>                
+            </div>
+            <div className="flex items-start gap-3 px-4 py-2 opacity-80 max-w-3xl">
+                <span className="text-lg">💡</span>
+                <p className="text-xs text-text/70 leading-relaxed mt-0.5">
+                    <strong>Tip de prueba:</strong> Descarga la plantilla, modifícala en cualquier editor manteniendo estrictamente las 4 columnas (<code>id</code>, <code>detalle</code>, <code>monto</code>, <code>estado</code>) y vuelve a cargarla para ver cómo el backend procesa tus datos cargados.
+                </p>
             </div>
         </div>
     );
