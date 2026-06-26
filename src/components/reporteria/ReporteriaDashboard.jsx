@@ -35,7 +35,7 @@ import reporteriaApi from '../../lib/reporteriaApi';
         setServerStatus('waking');
         setError(null);
         try {
-            await reporteriaApi.get('/ping');
+            await reporteriaApi.get('ping');
             setServerStatus('online');
         } catch (err) {
             setServerStatus('offline');
@@ -121,7 +121,7 @@ import reporteriaApi from '../../lib/reporteriaApi';
                 timezone: userTimezone,
                 data: { items: transactionsData } 
             };
-            const response = await reporteriaApi.post('/reportes/generar', payload, {
+            const response = await reporteriaApi.post('reportes/generar', payload, {
                 responseType: 'blob'
             });
 
