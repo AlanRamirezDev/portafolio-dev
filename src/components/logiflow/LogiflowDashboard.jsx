@@ -387,7 +387,7 @@ export default function LogiflowDashboard() {
                     <div className="bg-accent/10 border border-accent/20 p-4 rounded-xl mt-6">
                         <p className="text-accent text-xs font-mono mb-2 uppercase tracking-wider">La Solución Técnica</p>
                         <p className="text-white text-sm">
-                            Este motor delega el trabajo pesado a <strong>Hilos Virtuales de Java 21</strong>, fragmentando el archivo en lotes y procesándolo en segundo plano para mantener la interfaz de usuario siempre responsiva.
+                            Este pipeline delega el trabajo pesado a <strong>Hilos Virtuales de Java 21</strong>, fragmentando el archivo en lotes y procesándolo en segundo plano para mantener la interfaz de usuario siempre responsiva.
                         </p>
                     </div>
                 </div>

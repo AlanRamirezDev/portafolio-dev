@@ -9,12 +9,23 @@ export default function ReporteriaDashboard() {
     const [serverStatus, setServerStatus] = useState('offline');
 
     // Datos demo para el backend
-    const mockTransactions = [
+    const [transactionsData, setTransactionsData] = useState([
         { id: 'TXN-001', monto: 2868.60, estado: 'Aprobado', detalle: 'Conversión MXN a BTC' },
         { id: 'TXN-002', monto: 5000.00, estado: 'Pendiente', detalle: 'Fondeo programado Cetes' },
         { id: 'TXN-003', monto: 1500.00, estado: 'Aprobado', detalle: 'Liquidación USDC' },
-        { id: 'TXN-004', monto: 320.50,  estado: 'Rechazado', detalle: 'Retiro a cuenta externa' }
-    ];
+        { id: 'TXN-004', monto: 320.50,  estado: 'Rechazado', detalle: 'Retiro a cuenta externa' },
+        { id: 'TXN-005', monto: 12500.00, estado: 'En Revision', detalle: 'Depósito inusual en ventanilla' },
+        { id: 'TXN-006', monto: 450.00, estado: 'Aprobado', detalle: 'Pago de servicios' },
+        { id: 'TXN-007', monto: 890.00, estado: 'Pendiente', detalle: 'Transferencia SPEI' },
+        { id: 'TXN-008', monto: 120.00, estado: 'Aprobado', detalle: 'Compra de tarjeta de regalo' },
+        { id: 'TXN-009', monto: 55.00, estado: 'Rechazado', detalle: 'Cobro de comisión fallido' },
+        { id: 'TXN-010', monto: 3000.00, estado: 'Aprobado', detalle: 'Nómina quincenal' },
+        { id: 'TXN-011', monto: 75.50, estado: 'En Revision', detalle: 'Movimiento de fondos' },
+        { id: 'TXN-012', monto: 400.00, estado: 'Aprobado', detalle: 'Pago a proveedor de nube' },
+        { id: 'TXN-013', monto: 990.00, estado: 'Aprobado', detalle: 'Mensualidad de seguro' },
+        { id: 'TXN-014', monto: 2100.00, estado: 'Rechazado', detalle: 'Cargo internacional declinado' },
+        { id: 'TXN-015', monto: 600.00, estado: 'Aprobado', detalle: 'Retiro en cajero automático' },
+    ]);
 
     // Función para despertar el servidor (backend)
     const wakeUpServer = async () => {
@@ -27,6 +38,57 @@ export default function ReporteriaDashboard() {
             setServerStatus('offline');
             setError("Error: No se pudo encender el servidor. Contacta al administrador");
         }
+    };
+
+    const downloadTemplate = () => {
+        const templateContent = "id,detalle,monto,estado\nTXN-USER,Ejemplo de carga,100.00,Pendiente";
+        const blob = new Blob([templateContent], { type: 'text/csv;charset=utf-8;' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'plantilla_datos.csv');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    };
+
+    const handleFileUpload = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        event.target.value = null;
+
+        if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+            setError("Formato inválido. Por favor, asegúrate de cargar un archivo con extensión .CSV.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const text = e.target.result;
+            const rows = text.split('\n').map(row => row.trim()).filter(row => row !== '');
+            
+            const parsedData = rows.slice(1).map(row => {
+                const columns = row.split(',');
+                if (columns.length !== 4) return null;
+                
+                return {
+                    id: columns[0],
+                    detalle: columns[1],
+                    monto: parseFloat(columns[2]) || 0,
+                    estado: columns[3]
+                };
+            }).filter(item => item !== null);
+
+            if (parsedData.length === 0) {
+                setError("El archivo está vacío o no respeta la estructura de la plantilla.");
+                return;
+            }
+
+            setTransactionsData(parsedData);
+            setError(null);
+        };
+        reader.readAsText(file);
     };
 
     const handleDownload = async (formato) => {
@@ -47,7 +109,7 @@ export default function ReporteriaDashboard() {
         setLastAction(formato);
 
         try {
-            const payload = { formato, data: { items: mockTransactions } };
+            const payload = { formato, data: { items: transactionsData } };
             const response = await reporteriaApi.post('/reportes/generar', payload, {
                 responseType: 'blob'
             });
@@ -63,7 +125,7 @@ export default function ReporteriaDashboard() {
             setDownloadCount(prev => prev + 1);
         } catch (err) {
             setServerStatus('offline');
-            setError("💤 El servidor entró en suspensión por inactividad. Por favor, haz clic en 'Encender Servidor' para reactivarlo.");
+            setError("El servidor entró en suspensión por inactividad. Por favor, haz clic en 'Encender Servidor' para reactivarlo.");
         } finally {
             setIsGenerating(false);
             setTimeout(() => setLastAction(null), 3000);
@@ -96,7 +158,7 @@ export default function ReporteriaDashboard() {
                         Panel de Generación de Reportes
                     </h2>
                     <p className="text-text mt-1 text-sm max-w-xl">
-                        Este módulo empaqueta los datos transaccionales de prueba de la tabla inferior en formato JSON, y los envía al backend. Selecciona un formato para que el servidor compile la información y puedas ver su funcionamiento.
+                        Este módulo empaqueta datos transaccionales en formato JSON y los envía al backend para generar documentos. Puedes usar los datos de prueba de la tabla inferior o descargar la plantilla para cargar tu propia información. Selecciona un formato (CSV o PDF) para que el servidor compile los datos y puedas ver su funcionamiento.
                     </p>
                 </div>
                 
@@ -128,20 +190,20 @@ export default function ReporteriaDashboard() {
                 <button 
                     onClick={() => handleDownload('csv')}
                     disabled={isGenerating || serverStatus !== 'online'}
-                    className="relative text-left group bg-surface border border-white/10 hover:border-accent/50 p-6 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:hover:border-white/10 disabled:cursor-not-allowed overflow-hidden"
+                    className="relative text-left group bg-surface border border-green-500/20 hover:border-green-500/50 p-6 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:hover:border-green-500/20 disabled:cursor-not-allowed overflow-hidden"
                 >
-                    <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     <div className="relative z-10">
-                        <div className="bg-white/5 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <div className="bg-green-500/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                             <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                         </div>
                         <h3 className="text-lg font-bold text-white mb-1">Exportar .CSV (Crudo)</h3>
                         <p className="text-xs text-text leading-relaxed">
-                            Procesamiento vía <code className="text-accent bg-accent/10 px-1 rounded">php://temp</code>. Ideal para ingesta de datos. Escribe flujos directamente en memoria de manera ágil (sin tocar el disco del servidor).
+                            Procesamiento optimizado vía streams en memoria (<code className="text-green-400 bg-green-500/10 px-1 rounded">php://temp</code>). Ideal para ingesta ágil de datos, ya que evita el uso del disco del servidor para garantizar máxima velocidad.
                         </p>
-                        {lastAction === 'csv' && isGenerating && <span className="mt-4 block text-xs font-mono text-accent animate-pulse">Generando...</span>}
+                        {lastAction === 'csv' && isGenerating && <span className="mt-4 block text-xs font-mono text-green-400 animate-pulse">Procesando datos...</span>}
                     </div>
                 </button>
 
@@ -149,20 +211,20 @@ export default function ReporteriaDashboard() {
                 <button 
                     onClick={() => handleDownload('pdf')}
                     disabled={isGenerating || serverStatus !== 'online'}
-                    className="relative text-left group bg-surface border border-white/10 hover:border-accent/50 p-6 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:hover:border-white/10 disabled:cursor-not-allowed overflow-hidden shadow-[0_0_15px_rgba(0,128,255,0.05)]"
+                    className="relative text-left group bg-surface border border-red-500/20 hover:border-red-500/50 p-6 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:hover:border-red-500/20 disabled:cursor-not-allowed overflow-hidden shadow-[0_0_15px_rgba(0,128,255,0.05)]"
                 >
-                    <div className="absolute inset-0 bg-gradient-to-br from-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     <div className="relative z-10">
-                        <div className="bg-accent/20 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                            <svg className="w-6 h-6 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className="bg-red-500/20 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                         </div>
                         <h3 className="text-lg font-bold text-white mb-1">Generar Reporte .PDF</h3>
                         <p className="text-xs text-text leading-relaxed">
-                            Renderizado de plantillas. Aplica aritmética en el backend para calcular KPIs e inyecta la vista gráfica optimizada para archivos PDF.
+                            Renderizado de plantillas con cálculo dinámico de KPIs en el backend. Optimizado para generar documentos PDF de alta fidelidad y calidad gráfica.
                         </p>
-                        {lastAction === 'pdf' && isGenerating && <span className="mt-4 block text-xs font-mono text-accent animate-pulse">Compilando vista y calculando KPIs...</span>}
+                        {lastAction === 'pdf' && isGenerating && <span className="mt-4 block text-xs font-mono text-red-400 animate-pulse">Compilando vista y calculando KPIs...</span>}
                     </div>
                 </button>
             </div>
@@ -177,38 +239,73 @@ export default function ReporteriaDashboard() {
                 </div>
             )}
 
-            {/* Tabla de Previsualización (Payload) */}
-            <div className="bg-surface border border-white/10 rounded-2xl p-6 shadow-lg">
-                <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-wider opacity-80 border-b border-white/10 pb-3">
-                    Información Demo para procesar (JSON)
-                </h3>
+            {/* Tabla de Previsualización */}
+            <div className={`bg-surface border border-white/10 rounded-2xl p-6 shadow-lg transition-all duration-500 ${
+                serverStatus !== 'online' ? 'opacity-40 grayscale pointer-events-none' : ''
+            }`}>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-white/10 pb-3 gap-3">
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider opacity-80">
+                        Información Demo para procesar (JSON)
+                    </h3>
+                    <div className="flex items-center gap-2">
+                        <button 
+                            onClick={downloadTemplate}
+                            className="flex items-center gap-1.5 text-xs text-accent bg-accent/5 hover:bg-accent/10 border border-accent/20 px-3 py-1.5 rounded-md font-mono transition-colors cursor-pointer"
+                        >
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Plantilla (.CSV)
+                        </button>
+                        
+                        <label className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-3 py-1.5 rounded-md text-xs font-mono transition-colors cursor-pointer flex items-center gap-2">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                            </svg>
+                            Cargar Datos
+                            <input 
+                                type="file" 
+                                accept=".csv" 
+                                className="hidden" 
+                                onChange={handleFileUpload} 
+                            />
+                        </label>
+                    </div>
+                </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="border-b border-white/10">
-                                <th className="py-3 px-4 text-xs font-mono text-gray-400 uppercase tracking-wider">ID Ref</th>
+                                <th className="py-3 px-4 text-xs font-mono text-gray-400 uppercase tracking-wider">ID</th>
                                 <th className="py-3 px-4 text-xs font-mono text-gray-400 uppercase tracking-wider">Detalle Operativo</th>
                                 <th className="py-3 px-4 text-xs font-mono text-gray-400 uppercase tracking-wider text-right">Monto</th>
                                 <th className="py-3 px-4 text-xs font-mono text-gray-400 uppercase tracking-wider text-center">Estado</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
-                            {mockTransactions.map((txn) => (
-                                <tr key={txn.id} className="hover:bg-white/5 transition-colors">
-                                    <td className="py-3 px-4 font-mono text-sm text-text whitespace-nowrap">{txn.id}</td>
-                                    <td className="py-3 px-4 text-sm text-white">{txn.detalle}</td>
-                                    <td className="py-3 px-4 font-mono text-sm text-text text-right">${txn.monto.toFixed(2)}</td>
-                                    <td className="py-3 px-4 text-center">
-                                        <span className={`inline-block px-2 py-1 rounded-md text-xs font-bold ${
-                                            txn.estado === 'Aprobado' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 
-                                            txn.estado === 'Pendiente' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' : 
-                                            'bg-red-500/10 text-red-400 border border-red-500/20'
-                                        }`}>
-                                            {txn.estado}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))}
+                        {transactionsData.map((txn) => {
+                                const rawEst = txn.estado || '';
+                                const estNormalizado = rawEst.toLowerCase().trim();
+                                const isValid = ['aprobado', 'pendiente', 'rechazado'].includes(estNormalizado);
+                                const estFinal = isValid ? rawEst : 'No clasificado';
+                                
+                                let badgeClass = 'bg-slate-500/10 text-slate-400 border border-slate-500/20';
+                                if (estNormalizado === 'aprobado') badgeClass = 'bg-green-500/10 text-green-400 border border-green-500/20';
+                                else if (estNormalizado === 'pendiente') badgeClass = 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20';
+                                else if (estNormalizado === 'rechazado') badgeClass = 'bg-red-500/10 text-red-400 border border-red-500/20';
+                                return (
+                                    <tr key={txn.id} className="hover:bg-white/5 transition-colors">
+                                        <td className="py-3 px-4 font-mono text-sm text-text whitespace-nowrap">{txn.id}</td>
+                                        <td className="py-3 px-4 text-sm text-white">{txn.detalle}</td>
+                                        <td className="py-3 px-4 font-mono text-sm text-text text-right">${txn.monto.toFixed(2)}</td>
+                                        <td className="py-3 px-4 text-center">
+                                            <span className={`inline-block px-2 py-1 rounded-md text-xs font-bold uppercase ${badgeClass}`}>
+                                                {estFinal}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
