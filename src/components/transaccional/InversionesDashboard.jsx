@@ -1,13 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
+import { API_BASE_URL } from '../../lib/transaccional/transaccionalApi';
 
-const API_BASE_URL = import.meta.env.PROD 
-  ? 'https://motor-inversiones-api.onrender.com' 
-  : 'http://localhost:8080';
-
-export default function SimuladorInversiones() {
+export default function InversionesDashboard() {
   // Guardamos el estado de los balances. Inicialmente están en 0.
   const [balances, setBalances] = useState({ mxn: 0, usdc: 0 });
-  const [cargando, setCargando] = useState(true);
+  const [loading, setLoading] = useState(true);
   
   // Estados para capturar los inputs del usuario
   const [montoInyeccion, setMontoInyeccion] = useState('');
@@ -53,7 +50,7 @@ export default function SimuladorInversiones() {
         response = await fetch(`${API_BASE_URL}/api/v1/portafolios/1`);
       }
 
-      // Extraemos los datos y actualizamos la interfaz
+      // Extraer los datos y actualizar la interfaz
       const data = await response.json();
       setBalances({ 
         mxn: data.balanceMxn != null ? data.balanceMxn : 0, 
@@ -63,7 +60,7 @@ export default function SimuladorInversiones() {
     } catch (error) {
       agregarLog('ERR_CONNECTION - Revisar consola', 'error');
     } finally {
-      setCargando(false);
+      setLoading(false);
     }
   };
 
@@ -149,11 +146,11 @@ export default function SimuladorInversiones() {
     obtenerPortafolio();
   }, []);
 
-  if (cargando) {
+  if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center space-y-4 bg-[#171717] rounded-xl border border-zinc-800">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
-        <div className="space-y-2">
+        <div className="space-y-2 animate-pulse">
           <h3 className="text-xl font-semibold text-white">Conectando con el motor de inversiones...</h3>
           <p className="text-xs text-zinc-400 max-w-md mx-auto leading-relaxed">
             ⏳ Nota: El backend utiliza una capa gratuita en la nube. Si es la primera carga tras un periodo de inactividad, el servidor puede tardar hasta 60 segundos en iniciar. Agradezco tu paciencia.

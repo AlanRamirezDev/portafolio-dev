@@ -1,6 +1,6 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import SimuladorInversiones from '../components/SimuladorInversiones.jsx';
+import Layout from '../../layouts/Layout.astro';
+import InversionesDashboard from '../../components/transaccional/InversionesDashboard.jsx';
 ---
 
 <Layout title="Motor Transaccional | Portafolio">
@@ -23,7 +23,7 @@ import SimuladorInversiones from '../components/SimuladorInversiones.jsx';
       </p>
     </header>
 
-    <SimuladorInversiones client:load />
+    <InversionesDashboard client:load />
 
   </main>
 </Layout>
