@@ -104,7 +104,7 @@ export default function AuditLogsTable() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center space-y-4 bg-surface rounded-xl border border-white/5 shadow-2xl mt-4">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
-                <div className="space-y-2">
+                <div className="space-y-2 animate-pulse">
                     <h3 className="text-xl font-semibold text-white">Consultando bitácora...</h3>
                     <p className="text-xs text-text/50 max-w-md mx-auto leading-relaxed">
                         ⏳ Nota: El backend utiliza una capa gratuita en la nube. Si es la primera carga tras un periodo de inactividad, el servidor puede tardar hasta 60 segundos en iniciar. Agradezco tu paciencia.
@@ -137,7 +137,7 @@ export default function AuditLogsTable() {
                         <div>
                             <h4 className="text-sm font-bold text-white">Modo Demostración</h4>
                             <p className="text-xs text-text/80 leading-relaxed max-w-3xl mt-1">
-                                En un entorno de producción real, esta bitácora es estricta e inmutable. El sistema cuenta con 5 registros históricos pre-cargados para demostrar los estados de la interfaz, y tu actividad actual ya se está registrando. Además, esta función te permite inyectar tráfico masivo para evaluación técnica.
+                                En un entorno de producción real, esta bitácora es estricta e inmutable. El sistema cuenta con registros históricos pre-cargados para demostrar los estados de la interfaz, y tu actividad real ya se está registrando bajo un estricto protocolo de anonimización. Al usar la función de <strong>Simular Tráfico</strong>, el sistema inyectará eventos aleatorios con direcciones IP ficticias visibles para fines didácticos.
                             </p>
                         </div>
                     </div>
@@ -187,7 +187,18 @@ export default function AuditLogsTable() {
                                 <th className="px-6 py-4">ID</th>
                                 <th className="px-6 py-4">Usuario</th>
                                 <th className="px-6 py-4">Acción</th>
-                                <th className="px-6 py-4">Dirección IP</th>
+                                <th className="px-6 py-4">
+                                    <div className="flex items-center gap-1.5 group relative cursor-help w-max">
+                                        <span>Dirección IP</span>
+                                        <svg className="w-3.5 h-3.5 text-text/50 group-hover:text-accent transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        {/* Tooltip de Privacidad */}
+                                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 p-2.5 bg-background border border-white/10 rounded-lg shadow-xl text-xs text-text/90 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none normal-case font-normal text-center leading-relaxed">
+                                            Al ser una demo, las direcciones IP se muestran de forma parcial para cumplir con políticas de privacidad y protección de datos.
+                                        </div>
+                                    </div>
+                                </th>
                                 <th className="px-6 py-4">Detalles del Dispositivo</th>
                                 <th className="px-6 py-4">Fecha/Hora</th>
                             </tr>

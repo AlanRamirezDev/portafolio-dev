@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+const API_BASE_URL = import.meta.env.PUBLIC_IAM_API_URL || 
+    (import.meta.env.PROD ? 'https://iam-core.onrender.com/api/v1' : 'http://127.0.0.1:8000/api/v1');
+
 const iamApi = axios.create({
-    baseURL: 'https://iam-core.onrender.com/api/v1',
+    baseURL: API_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'

@@ -150,7 +150,7 @@ export default function UserManagement() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center space-y-4 bg-surface rounded-xl border border-white/5 shadow-2xl mt-4">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
-                <div className="space-y-2">
+                <div className="space-y-2 animate-pulse">
                     <h3 className="text-xl font-semibold text-white">Cargando directorio de usuarios...</h3>
                     <p className="text-xs text-text/50 max-w-md mx-auto leading-relaxed">
                         ⏳ Nota: El backend utiliza una capa gratuita en la nube. Si es la primera carga tras un periodo de inactividad, el servidor puede tardar hasta 60 segundos en iniciar. Agradezco tu paciencia.
