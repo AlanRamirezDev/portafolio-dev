@@ -1,55 +1,56 @@
 import { useState } from 'react';
 
+// El arreglo se declara fuera del componente para optimizar la memoria
+const logros = [
+  {
+    id: 'logro-3',
+    hash: 'a3d4e12',
+    titulo: 'Full Stack & DevOps Developer',
+    entidad: 'Centro Federal de Conciliación y Registro Laboral',
+    periodo: 'Feb 2023 - Actual',
+    descripcionCorta: 'Modernización de la interfaz de Conciliación Colectiva y desarrollo de lógicas de negocio bajo el patrón MVC.',
+    detalles: [
+      'Optimización y refactorización de consultas complejas en PostgreSQL y MySQL, logrando una reducción comprobada del 62% en los tiempos de respuesta.',
+      'Desarrollo de nuevas funcionalidades integrando APIs RESTful con PHP (Laravel) y JavaScript (ES6+), garantizando escalabilidad.',
+      "Documentación de procedimientos y validación del roles para el acceso a distintos módulos del sistema (RBAC).",
+      'Implementación de flujos de automatización (CI/CD) para QA y Producción.',
+    ],
+    tags: ['PHP', 'Laravel', 'Docker', 'CI/CD', 'PostgreSQL']
+  },
+  {
+    id: 'logro-2',
+    hash: 'e5f6g78',
+    titulo: 'Ingeniero de Infraestructura y Soporte Técnico',
+    entidad: 'DTEP RAM S.A. DE C.V.',
+    periodo: 'Abr 2021 - Ene 2023',
+    descripcionCorta: 'Aseguramiento de la continuidad operativa, administración de servidores y automatización de procesos operativos.',
+    detalles: [
+      'Automatización de tareas administrativas y operativas mediante la creación de scripts en Bash y PowerShell, mejorando la eficiencia del equipo.',
+      'Mantenimiento de la integridad referencial en esquemas relacionales (MySQL) mediante ejecución continua de consultas SQL.',
+      'Configuración de túneles VPN y arreglos RAID en la infraestructura tecnológica para garantizar la redundancia de datos.',
+      'Diagnóstico e instalación de configuraciones en servidores web.'
+    ],
+    tags: ['Bash', 'PowerShell', 'MySQL', 'VPN/RAID', 'Linux/Windows']
+  },
+  {
+    id: 'logro-1',
+    hash: 'b1c2d34',
+    titulo: 'Ingeniero en Informática (Titulado)',
+    entidad: 'IPN "UPIICSA"',
+    periodo: 'Concluido',
+    descripcionCorta: 'Formación profesional integral con enfoque en lógica de programación, algoritmos eficientes y diseño arquitectónico.',
+    detalles: [
+      'Cédula Profesional N° 13385449.',
+      'Cursos y Certificaciones: Programación con Java (Servicio público), Google AI y Data Analytics (Google/Coursera).',
+      'Idiomas: Español (Nativo), Inglés B2 (CEFR) (Intermedio-Avanzado).',
+      'Dominio de fundamentos de ingeniería: diseño de modelos entidad-relación, normalización y aplicación de patrones de diseño.'
+    ],
+    tags: ['Ingeniería de Software', 'Java', 'SQL', 'Arquitectura']
+  }
+];
+
 export default function ExperienceTimeline() {
   const [nodoExpandido, setNodoExpandido] = useState(null);
-
-  const logros = [
-    {
-      id: 'logro-3',
-      hash: 'a3d4e12',
-      titulo: 'Full Stack & DevOps Developer',
-      entidad: 'Centro Federal de Conciliación y Registro Laboral',
-      periodo: 'Feb 2023 - Actual',
-      descripcionCorta: 'Modernización de la interfaz de Conciliación Colectiva y desarrollo de lógicas de negocio bajo el patrón MVC.',
-      detalles: [
-        'Optimización y refactorización de consultas complejas en PostgreSQL y MySQL, logrando una reducción comprobada del 62% en los tiempos de respuesta.',
-        'Desarrollo de nuevas funcionalidades integrando APIs RESTful con PHP (Laravel) y JavaScript (ES6+), garantizando escalabilidad.',
-        "Documentación de procedimientos y validación del roles para el acceso a distintos módulos del sistema (RBAC).",
-        'Implementación de flujos de automatización (CI/CD) para QA y Producción.',
-      ],
-      tags: ['PHP', 'Laravel', 'Docker', 'CI/CD', 'PostgreSQL']
-    },
-    {
-      id: 'logro-2',
-      hash: 'e5f6g78',
-      titulo: 'Ingeniero de Infraestructura y Soporte Técnico',
-      entidad: 'DTEP RAM S.A. DE C.V.',
-      periodo: 'Abr 2021 - Ene 2023',
-      descripcionCorta: 'Aseguramiento de la continuidad operativa, administración de servidores y automatización de procesos operativos.',
-      detalles: [
-        'Automatización de tareas administrativas y operativas mediante la creación de scripts en Bash y PowerShell, mejorando la eficiencia del equipo.',
-        'Mantenimiento de la integridad referencial en esquemas relacionales (MySQL) mediante ejecución continua de consultas SQL.',
-        'Configuración de túneles VPN y arreglos RAID en la infraestructura tecnológica para garantizar la redundancia de datos.',
-        'Diagnóstico e instalación de configuraciones en servidores web.'
-      ],
-      tags: ['Bash', 'PowerShell', 'MySQL', 'VPN/RAID', 'Linux/Windows']
-    },
-    {
-      id: 'logro-1',
-      hash: 'b1c2d34',
-      titulo: 'Ingeniero en Informática (Titulado)',
-      entidad: 'IPN "UPIICSA"',
-      periodo: 'Concluido',
-      descripcionCorta: 'Formación profesional integral con enfoque en lógica de programación, algoritmos eficientes y diseño arquitectónico.',
-      detalles: [
-        'Cédula Profesional N° 13385449.',
-        'Cursos y Certificaciones: Programación con Java (Servicio público), Google AI y Data Analytics (Google/Coursera).',
-        'Idiomas: Español (Nativo), Inglés B2 (CEFR) (Intermedio-Avanzado).',
-        'Dominio de fundamentos de ingeniería: diseño de modelos entidad-relación, normalización y aplicación de patrones de diseño.'
-      ],
-      tags: ['Ingeniería de Software', 'Java', 'SQL', 'Arquitectura']
-    }
-  ];
 
   const toggleNodo = (id) => {
     setNodoExpandido(nodoExpandido === id ? null : id);
@@ -69,18 +70,30 @@ export default function ExperienceTimeline() {
               
               <button
                 onClick={() => toggleNodo(logro.id)}
+                aria-expanded={isOpen}
+                aria-label={`Ver más detalles sobre ${logro.titulo} en ${logro.entidad}`}
                 className={`absolute -left-[31px] md:-left-[39px] top-1.5 w-4 h-4 rounded-full border-2 transition-all duration-300 focus:outline-none cursor-pointer ${
                   isOpen 
                     ? 'bg-accent border-accent scale-125 shadow-[0_0_10px_rgba(99,102,241,0.5)]' 
-                    : 'bg-background border-white/30 group-hover:border-accent group-hover:scale-110'
+                    : 'bg-background border-white/30 group-hover:border-accent group-hover:scale-110 focus:border-accent'
                 }`}
                 title="Haga clic para expandir detalles del commit"
               />
 
               <div 
                 onClick={() => toggleNodo(logro.id)}
-                className={`bg-surface p-6 rounded-2xl border transition-all duration-300 cursor-pointer select-none ${
-                  isOpen ? 'border-accent/40 bg-surface/90 shadow-lg' : 'border-white/5 hover:border-white/20'
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleNodo(logro.id);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-expanded={isOpen}
+                aria-label={`Tarjeta de experiencia: ${logro.titulo} en ${logro.entidad}`}
+                className={`bg-surface p-6 rounded-2xl border transition-all duration-300 cursor-pointer select-none focus:outline-none focus:border-accent/40 group-hover:scale-105 origin-left group-hover:shadow-[0_0_30px_rgba(99,102,241,0.3)] ${
+                  isOpen ? 'border-accent/40 bg-surface/90 shadow-lg' : 'border-white/5 group-hover:border-accent/50'
                 }`}
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">

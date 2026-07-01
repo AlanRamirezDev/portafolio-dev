@@ -14,6 +14,16 @@ export async function getStaticPaths() {
 // Obtenemos los datos del proyecto actual
 const { proyecto } = Astro.props;
 const { Content } = await render(proyecto);
+
+// Diccionario de configuración para botones de demostración
+const CONFIG_DEMOS = {
+  'motor-inversiones': { url: '/transaccional', texto: 'Probar Motor en Vivo', icono: '🚀' },
+  'iam-dashboard': { url: '/iam', texto: 'Probar Panel IAM en Vivo', icono: '🛡️' },
+  'logiflow-etl': { url: '/logiflow', texto: 'Probar Pipeline ETL en Vivo', icono: '⚡' },
+  'api-reporteria': { url: '/reporteria', texto: 'Probar Generador en Vivo', icono: '📄' }
+};
+
+const demo = CONFIG_DEMOS[proyecto.id];
 ---
 
 <Layout title={`${proyecto.data.title} | Portafolio Backend`}>
@@ -39,34 +49,11 @@ const { Content } = await render(proyecto);
         {proyecto.data.description}
       </p>
 
-      {proyecto.id === 'motor-inversiones' && (
+      {/* Renderizado declarativo basado en datos */}
+      {demo && (
         <div class="mb-4">
-          <a href="/transaccional" class="inline-flex items-center gap-2 bg-accent text-background font-bold px-4 py-2 rounded-lg hover:bg-accent/80 transition-colors shadow-sm text-sm">
-            🚀 Probar Motor en Vivo
-          </a>
-        </div>
-      )}
-
-      {proyecto.id === 'iam-dashboard' && (
-        <div class="mb-4">
-          <a href="/iam" class="inline-flex items-center gap-2 bg-accent text-background font-bold px-4 py-2 rounded-lg hover:bg-accent/80 transition-colors shadow-sm text-sm">
-            🛡️ Probar Panel IAM en Vivo
-          </a>
-        </div>
-      )}
-
-      {proyecto.id === 'logiflow-etl' && (
-        <div class="mb-4">
-          <a href="/logiflow" class="inline-flex items-center gap-2 bg-accent text-background font-bold px-4 py-2 rounded-lg hover:bg-accent/80 transition-colors shadow-sm text-sm">
-            ⚡ Probar Pipeline ETL en Vivo
-          </a>
-        </div>
-      )}
-
-      {proyecto.id === 'api-reporteria' && (
-        <div class="mb-4">
-          <a href="/reporteria" class="inline-flex items-center gap-2 bg-accent text-background font-bold px-4 py-2 rounded-lg hover:bg-accent/80 transition-colors shadow-sm text-sm">
-            📄 Probar Generador en Vivo
+          <a href={demo.url} class="inline-flex items-center gap-2 bg-accent text-background font-bold px-4 py-2 rounded-lg hover:bg-accent/80 transition-colors shadow-sm text-sm">
+            <span>{demo.icono}</span> {demo.texto}
           </a>
         </div>
       )}
