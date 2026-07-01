@@ -1,9 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
-import HeroDual from '../components/HeroDual.jsx';
-import TechMatrix from '../components/TechMatrix.jsx';
-import ExperienceTimeline from '../components/ExperienceTimeline.jsx';
+import HeroDual from '../components/hub/HeroDual.jsx';
+import TechMatrix from '../components/hub/TechMatrix.jsx';
+import ExperienceTimeline from '../components/hub/ExperienceTimeline.jsx';
 
 const proyectos = await getCollection('proyectos');
 ---

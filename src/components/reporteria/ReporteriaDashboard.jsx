@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import reporteriaApi from '../../lib/reporteriaApi';
+import reporteriaApi from '../../lib/reporteria/reporteriaApi';
 
     // Datos demo para el backend
     const initialDemoData = [
