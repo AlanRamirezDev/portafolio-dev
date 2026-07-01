@@ -40,7 +40,7 @@ import AuditLogsTable from '../../components/iam/AuditLogsTable.jsx';
         </main>
 
         <script>
-            import api from '../../lib/api';
+            import iamApi from "../../lib/iam/iamApi";
 
             document.getElementById('logout-btn')?.addEventListener('click', async () => {
                 const btn = document.getElementById('logout-btn');
@@ -48,7 +48,7 @@ import AuditLogsTable from '../../components/iam/AuditLogsTable.jsx';
                 btn.classList.add('opacity-50', 'cursor-not-allowed');
                 
                 try {
-                    await api.post('/auth/logout');
+                    await iamApi.post('/auth/logout');
                 } catch (error) {
                     console.warn('La sesión ya había expirado en el servidor.');
                 } finally {

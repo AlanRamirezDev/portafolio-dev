@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const iamApi = axios.create({
-    baseURL: 'https://iam-core.onrender.com/api',
+    baseURL: 'https://iam-core.onrender.com/api/v1',
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
