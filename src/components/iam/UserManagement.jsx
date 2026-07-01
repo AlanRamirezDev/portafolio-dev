@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import api from "../../lib/api";
+import iamApi from "../../lib/iam/iamApi";
 
 const ROLE_DICTIONARY = {
     'admin': 'Administrador',
@@ -49,9 +49,9 @@ export default function UserManagement() {
     const fetchData = async () => {
         try {
             const [usersRes, rolesRes, authRes] = await Promise.all([
-                api.get('/users'),
-                api.get('/roles'),
-                api.get('/auth/me')
+                iamApi.get('/users'),
+                iamApi.get('/roles'),
+                iamApi.get('/auth/me')
             ]);
             
             setUsers(usersRes.data.data); 
@@ -90,7 +90,7 @@ export default function UserManagement() {
         setShowValidationErrors(false);
 
         try {
-            await api.post('/users', {
+            await iamApi.post('/users', {
                 name: formData.name,
                 email: formData.email,
                 password: formData.password,
@@ -117,7 +117,7 @@ export default function UserManagement() {
         if (!userToDelete) return;
         
         try {
-            await api.delete(`/users/${userToDelete.id}`);
+            await iamApi.delete(`/users/${userToDelete.id}`);
             setUserToDelete(null);
             setNotification({ type: 'success', message: 'Usuario dado de baja correctamente.' });
             fetchData(); 
@@ -136,7 +136,7 @@ export default function UserManagement() {
         if (!userToRestore) return;
         
         try {
-            await api.post(`/users/${userToRestore.id}/restore`);
+            await iamApi.post(`/users/${userToRestore.id}/restore`);
             setUserToRestore(null);
             setNotification({ type: 'success', message: 'Usuario reactivado exitosamente.' });
             fetchData();

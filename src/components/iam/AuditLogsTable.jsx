@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import api from "../../lib/api";
+import iamApi from "../../lib/iam/iamApi";
 
 export default function AuditLogsTable() {
     const [logs, setLogs] = useState([]);
@@ -13,7 +13,7 @@ export default function AuditLogsTable() {
 
     const fetchLogs = async () => {
         try {
-            const response = await api.get('/audit-logs');
+            const response = await iamApi.get('/audit-logs');
             setLogs(response.data.data);
         } catch (err) {
             if (err.response?.status === 403) {
@@ -44,7 +44,7 @@ export default function AuditLogsTable() {
         setSimulating(true);
         setFeedback('');
         try {
-            await api.post('/demo/simulate');
+            await iamApi.post('/demo/simulate');
             await fetchLogs(); 
             setFeedback('✅ 3 eventos aleatorios inyectados');
         } catch (err) {

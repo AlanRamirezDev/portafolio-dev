@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import api from "../../lib/api";
+import iamApi from "../../lib/iam/iamApi";
 
 export default function LoginForm() {
     const [email, setEmail] = useState('');
@@ -25,7 +25,7 @@ export default function LoginForm() {
         setLoading(true);
 
         try {
-            const response = await api.post('/auth/login', { email, password });
+            const response = await iamApi.post('/auth/login', { email, password });
             const { access_token, user } = response.data;
             localStorage.setItem('jwt_token', access_token);
             localStorage.setItem('user', JSON.stringify(user));
