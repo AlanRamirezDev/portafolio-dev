@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import iamApi from "../../lib/iam/iamApi";
 
 export default function LoginForm() {
@@ -6,6 +6,9 @@ export default function LoginForm() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    // Candado síncrono para evitar doble envío (Race Condition)
+    const isSubmitting = useRef(false);
 
     // Función utilitaria para la demo del portafolio
     const fillDemoCredentials = (role) => {
@@ -21,6 +24,13 @@ export default function LoginForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // Bloqueo estricto: Si la referencia está activa, aborta la ejecución al instante
+        if (isSubmitting.current) return;
+        
+        // Cerramos el candado inmediatamente
+        isSubmitting.current = true;
+        
         setError('');
         setLoading(true);
 
@@ -37,6 +47,8 @@ export default function LoginForm() {
             } else {
                 setError(err.response?.data?.error || 'Ocurrió un error al intentar conectar con el servidor.');
             }
+            // Solo abrimos el candado si hay un error, ya que si hay éxito, la página se recargará
+            isSubmitting.current = false;
         } finally {
             setLoading(false);
         }

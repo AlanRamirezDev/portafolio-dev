@@ -1,5 +1,22 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import iamApi from "../../lib/iam/iamApi";
+
+// Se extrae la función fuera del componente para evitar que se vuelva a instanciar en memoria.
+// Helper para colores dinámicos en las burbujas de acción
+const getActionBadgeStyle = (action) => {
+    switch(action) {
+        case 'LOGIN_SUCCESS': 
+            return 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20';
+        case 'USER_CREATED': 
+            return 'bg-blue-400/10 text-blue-400 border-blue-400/20';
+        case 'USER_DELETED': 
+            return 'bg-red-400/10 text-red-400 border-red-400/20';
+        case 'USER_RESTORED':
+            return 'bg-purple-400/10 text-purple-400 border-purple-400/20';
+        default: 
+            return 'bg-white/5 text-text border-white/10';
+    }
+};
 
 export default function AuditLogsTable() {
     const [logs, setLogs] = useState([]);
@@ -11,10 +28,22 @@ export default function AuditLogsTable() {
     const [isAdmin, setIsAdmin] = useState(false);
     const [feedback, setFeedback] = useState('');
 
+    const timeoutRef = useRef(null);
+
     const fetchLogs = async () => {
         try {
             const response = await iamApi.get('/audit-logs');
-            setLogs(response.data.data);
+            
+            // Se mapea el arreglo una sola vez al llegar del backend para eliminar peraciones costosas en busqueda de fecha.
+            const logsProcesados = response.data.data.map(log => ({
+                ...log,
+                displayDate: new Date(log.created_at).toLocaleString('es-MX', {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                })
+            }));
+
+            setLogs(logsProcesados);
         } catch (err) {
             if (err.response?.status === 403) {
                 setError('FORBIDDEN');
@@ -28,6 +57,10 @@ export default function AuditLogsTable() {
 
     useEffect(() => {
         fetchLogs();
+
+        return () => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        };
     }, []);
 
     useEffect(() => {
@@ -52,7 +85,9 @@ export default function AuditLogsTable() {
             setFeedback('❌ Error de inyección');
         } finally {
             setSimulating(false);
-            setTimeout(() => setFeedback(''), 5000);
+            
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            timeoutRef.current = setTimeout(() => setFeedback(''), 5000);
         }
     };
 
@@ -67,12 +102,7 @@ export default function AuditLogsTable() {
             const targetEmail = log.payload?.target_email?.toLowerCase() || '';
             const ip = log.ip_address?.toLowerCase() || '';
             const agent = log.payload?.user_agent?.toLowerCase() || '';
-            
-            // Formato de fecha para que el usuario pueda buscarla tal cual la lee
-            const dateStr = new Date(log.created_at).toLocaleString('es-MX', {
-                day: '2-digit', month: '2-digit', year: 'numeric',
-                hour: '2-digit', minute: '2-digit'
-            }).toLowerCase();
+            const dateStr = log.displayDate.toLowerCase();
             
             return actorName.includes(lowerTerm) || 
                    actorEmail.includes(lowerTerm) || 
@@ -83,22 +113,6 @@ export default function AuditLogsTable() {
                    dateStr.includes(lowerTerm);
         });
     }, [logs, searchTerm]);
-
-    // Helper para colores dinámicos en las burbujas de acción
-    const getActionBadgeStyle = (action) => {
-        switch(action) {
-            case 'LOGIN_SUCCESS': 
-                return 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20';
-            case 'USER_CREATED': 
-                return 'bg-blue-400/10 text-blue-400 border-blue-400/20';
-            case 'USER_DELETED': 
-                return 'bg-red-400/10 text-red-400 border-red-400/20';
-            case 'USER_RESTORED':
-                return 'bg-purple-400/10 text-purple-400 border-purple-400/20';
-            default: 
-                return 'bg-white/5 text-text border-white/10';
-        }
-    };
 
     if (loading) {
         return (
@@ -113,6 +127,7 @@ export default function AuditLogsTable() {
             </div>
         );
     }
+
     if (error === 'FORBIDDEN') {
         return (
             <div className="w-full max-w-2xl mx-auto p-8 bg-surface border border-red-500/10 rounded-2xl text-center shadow-2xl mt-4">
@@ -141,7 +156,6 @@ export default function AuditLogsTable() {
                             </p>
                         </div>
                     </div>
-                    {/* Contenedor del botón ajustado para responsividad */}
                     <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto justify-center sm:justify-end mt-2 sm:mt-0">
                         {feedback && (
                             <span className="text-xs font-medium text-emerald-400 animate-pulse bg-emerald-400/10 px-2 py-1 rounded-md border border-emerald-400/20 text-center w-full sm:w-auto">
@@ -187,18 +201,7 @@ export default function AuditLogsTable() {
                                 <th className="px-6 py-4">ID</th>
                                 <th className="px-6 py-4">Usuario</th>
                                 <th className="px-6 py-4">Acción</th>
-                                <th className="px-6 py-4">
-                                    <div className="flex items-center gap-1.5 group relative cursor-help w-max">
-                                        <span>Dirección IP</span>
-                                        <svg className="w-3.5 h-3.5 text-text/50 group-hover:text-accent transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        {/* Tooltip de Privacidad */}
-                                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 p-2.5 bg-background border border-white/10 rounded-lg shadow-xl text-xs text-text/90 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-none normal-case font-normal text-center leading-relaxed">
-                                            Al ser una demo, las direcciones IP se muestran de forma parcial para cumplir con políticas de privacidad y protección de datos.
-                                        </div>
-                                    </div>
-                                </th>
+                                <th className="px-6 py-4">Dirección IP</th>
                                 <th className="px-6 py-4">Detalles del Dispositivo</th>
                                 <th className="px-6 py-4">Fecha/Hora</th>
                             </tr>
@@ -235,8 +238,7 @@ export default function AuditLogsTable() {
                                             <span className={`inline-flex px-2.5 py-1 text-xs font-mono rounded-md border ${getActionBadgeStyle(log.action)}`}>
                                                 {log.action}
                                             </span>
-                                            
-                                            {/* Renderizado condicional del usuario afectado extraído del payload */}
+                                            {/* Renderizado del usuario afectado */}
                                             {log.payload?.target_email && (
                                                 <div className="mt-1.5 flex items-center text-[11px] font-mono">
                                                     <span className="text-text/70 mr-1.5">Usuario:</span>
@@ -258,13 +260,7 @@ export default function AuditLogsTable() {
                                         </td>
                                         
                                         <td className="px-6 py-4 text-xs text-text font-mono">
-                                            {new Date(log.created_at).toLocaleString('es-MX', {
-                                                day: '2-digit',
-                                                month: '2-digit',
-                                                year: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            })}
+                                            {log.displayDate}
                                         </td>
                                     </tr>
                                 ))

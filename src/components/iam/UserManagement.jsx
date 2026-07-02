@@ -30,7 +30,7 @@ export default function UserManagement() {
         { id: 'upper', label: 'Mayúscula', isValid: /[A-Z]/.test(pwd) },
         { id: 'lower', label: 'Minúscula', isValid: /[a-z]/.test(pwd) },
         { id: 'number', label: 'Número', isValid: /[0-9]/.test(pwd) },
-        { id: 'symbol', label: 'Carácter especial', isValid: /[^A-Za-z0-9]/.test(pwd) }
+        { id: 'symbol', label: 'Caracter especial', isValid: /[^A-Za-z0-9]/.test(pwd) }
     ];
 
     useEffect(() => {
@@ -90,16 +90,17 @@ export default function UserManagement() {
         setShowValidationErrors(false);
 
         try {
-            await iamApi.post('/users', {
+            const response = await iamApi.post('/users', {
                 name: formData.name,
                 email: formData.email,
                 password: formData.password,
                 roles: [formData.role] 
             });
             
+            setUsers(prevUsers => [response.data, ...prevUsers]);
+
             setNotification({ type: 'success', message: 'Usuario registrado exitosamente.' });
             setFormData({ name: '', email: '', password: '', role: roles[0]?.name || '' });
-            fetchData(); 
         } catch (err) {
             if (err.response?.status === 422 && err.response.data?.errors) {
                 const errorKeys = Object.keys(err.response.data.errors);
@@ -114,16 +115,27 @@ export default function UserManagement() {
     };
 
     const confirmDelete = async () => {
-        if (!userToDelete) return;
+        if (!userToDelete || isSubmitting) return;
+        
+        setIsSubmitting(true);
+        const targetId = userToDelete.id;
         
         try {
-            await iamApi.delete(`/users/${userToDelete.id}`);
+            await iamApi.delete(`/users/${targetId}`);
+            
+            setUsers(prevUsers => prevUsers.map(user => 
+                user.id === targetId 
+                ? { ...user, deleted_at: new Date().toISOString() } 
+                : user
+            ));
+
             setUserToDelete(null);
             setNotification({ type: 'success', message: 'Usuario dado de baja correctamente.' });
-            fetchData(); 
         } catch (err) {
             setUserToDelete(null);
             setNotification({ type: 'error', message: err.response?.data?.error || 'Error al procesar la baja del usuario.' });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -133,16 +145,27 @@ export default function UserManagement() {
     };
 
     const confirmRestore = async () => {
-        if (!userToRestore) return;
+        if (!userToRestore || isSubmitting) return;
+        
+        setIsSubmitting(true);
+        const targetId = userToRestore.id;
         
         try {
-            await iamApi.post(`/users/${userToRestore.id}/restore`);
+            await iamApi.post(`/users/${targetId}/restore`);
+            
+            setUsers(prevUsers => prevUsers.map(user => 
+                user.id === targetId 
+                ? { ...user, deleted_at: null } 
+                : user
+            ));
+
             setUserToRestore(null);
             setNotification({ type: 'success', message: 'Usuario reactivado exitosamente.' });
-            fetchData();
         } catch (err) {
             setUserToRestore(null);
             setNotification({ type: 'error', message: err.response?.data?.error || 'Error al reactivar el usuario.' });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -267,7 +290,7 @@ export default function UserManagement() {
                             </thead>
                             <tbody className="divide-y divide-white/5 text-sm">
                                 {users.map((user) => {
-                                    const isInactive = user.deleted_at !== null;
+                                    const isInactive = !!user.deleted_at;
                                     
                                     return (
                                         <tr key={user.id} className={`transition-colors ${isInactive ? 'bg-black/20 opacity-70' : 'hover:bg-white/5'}`}>
@@ -300,7 +323,7 @@ export default function UserManagement() {
                                                 {new Date(user.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                                             </td>
                                             
-                                            {/* Columna de Acciones exclusiva para Admin */}
+                                            {/* Columna de Acciones (Admin) */}
                                             {isAdmin && (
                                                 <td className="px-6 py-4 text-right">
                                                     {isInactive ? (
@@ -332,9 +355,9 @@ export default function UserManagement() {
                             Estás a punto de revocar el acceso y dar de baja lógicamente al usuario <span className="text-white font-mono bg-white/5 px-1 rounded">{userToDelete.email}</span>. ¿Deseas continuar?
                         </p>
                         <div className="flex justify-end gap-3">
-                            <button onClick={() => setUserToDelete(null)} className="px-4 py-2 text-sm font-medium text-text hover:text-white transition-colors">Cancelar</button>
-                            <button onClick={confirmDelete} className="px-4 py-2 text-sm font-medium bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg hover:bg-red-500/20 transition-colors">
-                                Sí, dar de baja
+                            <button disabled={isSubmitting} onClick={() => setUserToDelete(null)} className="px-4 py-2 text-sm font-medium text-text hover:text-white transition-colors disabled:opacity-50">Cancelar</button>
+                            <button disabled={isSubmitting} onClick={confirmDelete} className="px-4 py-2 text-sm font-medium bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg hover:bg-red-500/20 transition-colors disabled:opacity-50">
+                                {isSubmitting ? 'Procesando...' : 'Sí, dar de baja'}
                             </button>
                         </div>
                     </div>
@@ -350,9 +373,9 @@ export default function UserManagement() {
                             Estás a punto de restaurar el acceso al usuario <span className="text-white font-mono bg-white/5 px-1 rounded">{userToRestore.email}</span>. ¿Deseas continuar?
                         </p>
                         <div className="flex justify-end gap-3">
-                            <button onClick={() => setUserToRestore(null)} className="px-4 py-2 text-sm font-medium text-text hover:text-white transition-colors">Cancelar</button>
-                            <button onClick={confirmRestore} className="px-4 py-2 text-sm font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg hover:bg-emerald-500/20 transition-colors">
-                                Sí, reactivar
+                            <button disabled={isSubmitting} onClick={() => setUserToRestore(null)} className="px-4 py-2 text-sm font-medium text-text hover:text-white transition-colors disabled:opacity-50">Cancelar</button>
+                            <button disabled={isSubmitting} onClick={confirmRestore} className="px-4 py-2 text-sm font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg hover:bg-emerald-500/20 transition-colors disabled:opacity-50">
+                                {isSubmitting ? 'Procesando...' : 'Sí, reactivar'}
                             </button>
                         </div>
                     </div>
