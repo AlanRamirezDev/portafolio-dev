@@ -216,16 +216,17 @@ export default function UserManagement() {
                             <h3 className="text-xl font-bold text-white mb-4">Nuevo Usuario</h3>
                             <form onSubmit={handleCreateUser} className="space-y-4">
                                 <div>
-                                    <label className="block text-xs font-medium text-text mb-1 uppercase tracking-wider">Nombre</label>
-                                    <input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full px-3 py-2 bg-background border border-white/10 rounded-lg text-white focus:outline-none focus:border-accent text-sm" />
+                                    <label htmlFor="createName" className="block text-xs font-medium text-text mb-1 uppercase tracking-wider">Nombre</label>
+                                    <input id="createName" type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full px-3 py-2 bg-background border border-white/10 rounded-lg text-white focus:outline-none focus:border-accent text-sm" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-text mb-1 uppercase tracking-wider">Correo</label>
-                                    <input type="email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full px-3 py-2 bg-background border border-white/10 rounded-lg text-white focus:outline-none focus:border-accent font-mono text-sm" />
+                                    <label htmlFor="createEmail" className="block text-xs font-medium text-text mb-1 uppercase tracking-wider">Correo</label>
+                                    <input id="createEmail" type="email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full px-3 py-2 bg-background border border-white/10 rounded-lg text-white focus:outline-none focus:border-accent font-mono text-sm" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-text mb-1 uppercase tracking-wider">Contraseña</label>
+                                    <label htmlFor="createPassword" className="block text-xs font-medium text-text mb-1 uppercase tracking-wider">Contraseña</label>
                                     <input 
+                                        id="createPassword"
                                         type="password" 
                                         required 
                                         value={formData.password} 
@@ -254,8 +255,8 @@ export default function UserManagement() {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-text mb-1 uppercase tracking-wider mt-2">Rol del Sistema</label>
-                                    <select value={formData.role} onChange={(e) => setFormData({...formData, role: e.target.value})} className="w-full px-3 py-2 bg-background border border-white/10 rounded-lg text-white focus:outline-none focus:border-accent text-sm">
+                                    <label htmlFor="createRole" className="block text-xs font-medium text-text mb-1 uppercase tracking-wider mt-2">Rol del Sistema</label>
+                                    <select id="createRole" value={formData.role} onChange={(e) => setFormData({...formData, role: e.target.value})} className="w-full px-3 py-2 bg-background border border-white/10 rounded-lg text-white focus:outline-none focus:border-accent text-sm">
                                         {roles.map(r => (
                                             <option key={r.id} value={r.name}>{ROLE_DICTIONARY[r.name] || r.name}</option>
                                         ))}

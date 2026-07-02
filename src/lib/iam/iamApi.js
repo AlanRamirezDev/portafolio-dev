@@ -11,7 +11,7 @@ const iamApi = axios.create({
     }
 });
 
-// Interceptor para inyectar el token automáticamente en cada petición
+// Inyectar el token automáticamente
 iamApi.interceptors.request.use((config) => {
     const token = localStorage.getItem('jwt_token');
     if (token) {
@@ -19,5 +19,21 @@ iamApi.interceptors.request.use((config) => {
     }
     return config;
 });
+
+// Manejo global de sesión expirada
+iamApi.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            localStorage.removeItem('jwt_token');
+            localStorage.removeItem('user');
+            
+            if (window.location.pathname !== '/iam') {
+                window.location.replace('/iam');
+            }
+        }
+        return Promise.reject(error);
+    }
+);
 
 export default iamApi;

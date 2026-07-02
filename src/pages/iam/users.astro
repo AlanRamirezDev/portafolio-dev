@@ -42,10 +42,16 @@ import UserManagement from '../../components/iam/UserManagement.jsx';
         <script>
             import iamApi from "../../lib/iam/iamApi";
 
+            if (!localStorage.getItem('jwt_token')) {
+                window.location.replace('/iam');
+            }
+
             document.getElementById('logout-btn')?.addEventListener('click', async () => {
                 const btn = document.getElementById('logout-btn');
-                btn.innerText = 'Cerrando sesión...';
-                btn.classList.add('opacity-50', 'cursor-not-allowed');
+                if (btn) {
+                    btn.innerText = 'Cerrando sesión...';
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
                 
                 try {
                     await iamApi.post('/auth/logout');
@@ -54,7 +60,7 @@ import UserManagement from '../../components/iam/UserManagement.jsx';
                 } finally {
                     localStorage.removeItem('jwt_token');
                     localStorage.removeItem('user');
-                    window.location.href = '/iam';
+                    window.location.replace('/iam');
                 }
             });
         </script>

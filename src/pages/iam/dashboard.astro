@@ -42,10 +42,17 @@ import AuditLogsTable from '../../components/iam/AuditLogsTable.jsx';
         <script>
             import iamApi from "../../lib/iam/iamApi";
 
+            // Expulsa al usuario antes de que intente interactuar con el DOM si no hay sesión
+            if (!localStorage.getItem('jwt_token')) {
+                window.location.replace('/iam');
+            }
+
             document.getElementById('logout-btn')?.addEventListener('click', async () => {
                 const btn = document.getElementById('logout-btn');
-                btn.innerText = 'Cerrando sesión...';
-                btn.classList.add('opacity-50', 'cursor-not-allowed');
+                if (btn) {
+                    btn.innerText = 'Cerrando sesión...';
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
                 
                 try {
                     await iamApi.post('/auth/logout');
@@ -54,7 +61,7 @@ import AuditLogsTable from '../../components/iam/AuditLogsTable.jsx';
                 } finally {
                     localStorage.removeItem('jwt_token');
                     localStorage.removeItem('user');
-                    window.location.href = '/iam';
+                    window.location.replace('/iam');
                 }
             });
         </script>
