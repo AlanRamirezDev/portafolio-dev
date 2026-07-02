@@ -89,6 +89,8 @@ export default function UserManagement() {
         setNotification({ type: '', message: '' });
         setShowValidationErrors(false);
 
+        window.dispatchEvent(new CustomEvent('iam-user-creation', { detail: { active: true } }));
+
         try {
             const response = await iamApi.post('/users', {
                 name: formData.name,
@@ -111,6 +113,7 @@ export default function UserManagement() {
             }
         } finally {
             setIsSubmitting(false);
+            window.dispatchEvent(new CustomEvent('iam-user-creation', { detail: { active: false } }));
         }
     };
 
@@ -328,11 +331,19 @@ export default function UserManagement() {
                                             {isAdmin && (
                                                 <td className="px-6 py-4 text-right">
                                                     {isInactive ? (
-                                                        <button onClick={() => handleRestoreUser(user)} className="text-xs font-medium text-emerald-400 hover:text-emerald-300 transition-colors">
+                                                        <button 
+                                                            disabled={isSubmitting} 
+                                                            onClick={() => handleRestoreUser(user)} 
+                                                            className="text-xs font-medium text-emerald-400 hover:text-emerald-300 transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                                                        >
                                                             Reactivar
                                                         </button>
                                                     ) : (
-                                                        <button onClick={() => setUserToDelete(user)} className="text-xs font-medium text-red-400 hover:text-red-300 transition-colors">
+                                                        <button 
+                                                            disabled={isSubmitting} 
+                                                            onClick={() => setUserToDelete(user)} 
+                                                            className="text-xs font-medium text-red-400 hover:text-red-300 transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                                                        >
                                                             Dar de baja
                                                         </button>
                                                     )}

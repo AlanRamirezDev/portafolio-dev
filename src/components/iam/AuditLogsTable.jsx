@@ -76,6 +76,9 @@ export default function AuditLogsTable() {
     const handleSimulate = async () => {
         setSimulating(true);
         setFeedback('');
+        
+        window.dispatchEvent(new CustomEvent('iam-simulation', { detail: { active: true } }));
+        
         try {
             await iamApi.post('/demo/simulate');
             await fetchLogs(); 
@@ -85,6 +88,8 @@ export default function AuditLogsTable() {
             setFeedback('❌ Error de inyección');
         } finally {
             setSimulating(false);
+            
+            window.dispatchEvent(new CustomEvent('iam-simulation', { detail: { active: false } }));
             
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
             timeoutRef.current = setTimeout(() => setFeedback(''), 5000);
@@ -152,7 +157,7 @@ export default function AuditLogsTable() {
                         <div>
                             <h4 className="text-sm font-bold text-white">Modo Demostración</h4>
                             <p className="text-xs text-text/80 leading-relaxed max-w-3xl mt-1">
-                                En un entorno de producción real, esta bitácora es estricta e inmutable. El sistema cuenta con registros históricos pre-cargados para demostrar los estados de la interfaz, y tu actividad real ya se está registrando bajo un estricto protocolo de anonimización. Al usar la función de <strong>Simular Tráfico</strong>, el sistema inyectará eventos aleatorios con direcciones IP ficticias visibles para fines didácticos.
+                                En un entorno de producción real, esta bitácora debe ser estricta e inmutable. El sistema cuenta con 5 registros históricos pre-cargados (inalterables) para demostrar los estados de la interfaz. Tu actividad real ya se está registrando bajo un estricto protocolo de anonimización en la IP. Al usar la función de <strong>Simular Tráfico</strong>, el sistema inyectará eventos aleatorios con direcciones IP ficticias visibles para fines didácticos.
                             </p>
                         </div>
                     </div>

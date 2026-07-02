@@ -17,8 +17,8 @@ import UserManagement from '../../components/iam/UserManagement.jsx';
                 <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-8 w-full sm:w-auto">
                     <h1 class="text-xl font-bold text-white tracking-tight text-center sm:text-left w-full sm:w-auto">IAM</h1>
                     <div class="flex justify-center gap-4 w-full sm:w-auto">
-                        <a href="/iam/dashboard" class="text-sm font-medium text-text hover:text-white transition-colors">Bitácora</a>
-                        <a href="/iam/users" class="text-sm font-medium text-accent border-b border-accent pb-1">Gestión de Usuarios</a>
+                        <a href="/iam/dashboard" id="nav-dashboard-link" class="text-sm font-medium text-text hover:text-white transition-colors">Bitácora</a>
+                        <a href="/iam/users" id="nav-users-link" class="text-sm font-medium text-accent border-b border-accent pb-1">Gestión de Usuarios</a>
                     </div>
                 </div>
                 <button 
@@ -42,10 +42,32 @@ import UserManagement from '../../components/iam/UserManagement.jsx';
         <script>
             import iamApi from "../../lib/iam/iamApi";
 
+            // Expulsa al usuario antes de que intente interactuar con el DOM si no hay sesión
             if (!localStorage.getItem('jwt_token')) {
                 window.location.replace('/iam');
             }
 
+            // Listener global del estado
+            window.addEventListener('iam-user-creation', (e) => {
+                const isCreating = e.detail.active;
+                const logoutBtn = document.getElementById('logout-btn');
+                const dashboardLink = document.getElementById('nav-dashboard-link');
+                const usersLink = document.getElementById('nav-users-link');
+
+                if (isCreating) {
+                    if (logoutBtn) logoutBtn.disabled = true;
+                    logoutBtn?.classList.add('opacity-50', 'pointer-events-none');
+                    dashboardLink?.classList.add('opacity-50', 'pointer-events-none');
+                    usersLink?.classList.add('opacity-50', 'pointer-events-none');
+                } else {
+                    if (logoutBtn) logoutBtn.disabled = false;
+                    logoutBtn?.classList.remove('opacity-50', 'pointer-events-none');
+                    dashboardLink?.classList.remove('opacity-50', 'pointer-events-none');
+                    usersLink?.classList.remove('opacity-50', 'pointer-events-none');
+                }
+            });
+
+            // Manejo de cierre de sesión
             document.getElementById('logout-btn')?.addEventListener('click', async () => {
                 const btn = document.getElementById('logout-btn');
                 if (btn) {

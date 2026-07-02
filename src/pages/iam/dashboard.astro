@@ -17,8 +17,8 @@ import AuditLogsTable from '../../components/iam/AuditLogsTable.jsx';
                 <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-8 w-full sm:w-auto">
                     <h1 class="text-xl font-bold text-white tracking-tight text-center sm:text-left w-full sm:w-auto">IAM</h1>
                     <div class="flex justify-center gap-4 w-full sm:w-auto">
-                        <a href="/iam/dashboard" class="text-sm font-medium text-accent border-b border-accent pb-1">Bitácora</a>
-                        <a href="/iam/users" class="text-sm font-medium text-text hover:text-white transition-colors">Gestión de Usuarios</a>
+                        <a href="/iam/dashboard" id="nav-dashboard-link" class="text-sm font-medium text-accent border-b border-accent pb-1">Bitácora</a>
+                        <a href="/iam/users" id="nav-users-link" class="text-sm font-medium text-text hover:text-white transition-colors">Gestión de Usuarios</a>
                     </div>
                 </div>
                 <button 
@@ -47,6 +47,27 @@ import AuditLogsTable from '../../components/iam/AuditLogsTable.jsx';
                 window.location.replace('/iam');
             }
 
+            // Listener global del estado
+            window.addEventListener('iam-simulation', (e) => {
+                const isSimulating = e.detail.active;
+                const logoutBtn = document.getElementById('logout-btn');
+                const usersLink = document.getElementById('nav-users-link');
+                const dashboardLink = document.getElementById('nav-dashboard-link');
+
+                if (isSimulating) {
+                    if (logoutBtn) logoutBtn.disabled = true;
+                    logoutBtn?.classList.add('opacity-50', 'pointer-events-none');
+                    usersLink?.classList.add('opacity-50', 'pointer-events-none');
+                    dashboardLink?.classList.add('opacity-50', 'pointer-events-none');
+                } else {
+                    if (logoutBtn) logoutBtn.disabled = false;
+                    logoutBtn?.classList.remove('opacity-50', 'pointer-events-none');
+                    usersLink?.classList.remove('opacity-50', 'pointer-events-none');
+                    dashboardLink?.classList.remove('opacity-50', 'pointer-events-none');
+                }
+            });
+
+            // Manejo de cierre de sesión
             document.getElementById('logout-btn')?.addEventListener('click', async () => {
                 const btn = document.getElementById('logout-btn');
                 if (btn) {
