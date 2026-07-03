@@ -45,9 +45,12 @@ Microservicio de alto rendimiento para demostrar el procesamiento masivo de arch
 * **Sincronización Inteligente de Red:** Frontend defensivo que consulta activamente la salud del motor backend, implementando tolerancias de latencia dinámicas para mitigar los retrasos de red.
 * **Terminal SQL y Simulador WAF/RBAC:** Consola interactiva embebida con acciones rápidas que evalúa la robustez del sistema filtrando inyecciones SQL destructivas y bloqueando peticiones fuera de los roles permitidos.
 
-### 4. Generador Dinámico de Reportes: Generación y Extracción de Datos
-Microservicio independiente diseñado para consolidar y exportar información crítica del ecosistema.
-* **Arquitectura Stateless:** Backend desarrollado en PHP 8.3 y Laravel, operando y consumiendo recursos de generación bajo demanda.
+### 4. Generador Dinámico de Reportes: Extracción y Renderizado
+Microservicio diseñado para consolidar y exportar información crítica del ecosistema bajo demanda, demostrando un alto dominio en la manipulación de datos y resiliencia en la nube.
+* **Patrón Strategy y Clean Architecture:** Backend desarrollado en PHP 8.3 y Laravel, implementando el patrón *Strategy* para la generación polimórfica de documentos (PDF/CSV), respetando el principio Open/Closed Principle de SOLID.
+* **Procesamiento Óptimo en Memoria:** Manipulación de flujos de datos (*streams*) directamente en memoria (`php://temp`) para las exportaciones en crudo, evitando escrituras en disco y maximizando la velocidad de respuesta del servidor.
+* **Rate Limiting y Seguridad Perimetral:** Protección estricta de infraestructura mediante middlewares de `throttle` para prevenir abusos y agotamiento de recursos (DoS). Sincronizado con una interfaz que intercepta los códigos HTTP 429.
+* **Consistencia de Contexto y UX Defensiva:** Inyección dinámica de la zona horaria del cliente hacia el motor de renderizado, y aplicación de bloqueos perimetrales del DOM mediante *Custom Events* para prevenir condiciones de carrera durante procesos asíncronos pesados.
 
 ---
 
