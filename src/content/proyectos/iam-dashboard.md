@@ -15,7 +15,7 @@ Para resolver este desafío de manera integral, se diseñó e integró un ecosis
 
 1. **Backend (Motor de Identidad y Seguridad):** Arquitectura construida sobre Laravel 13. El núcleo aísla la lógica de autenticación (JWT) y protege los endpoints mediante un middleware personalizado (`CheckRole`), asegurando que solo usuarios con privilegios específicos interactúen con la base de datos. Además, implementa un registro de auditoría inmutable que anonimiza direcciones IP utilizando *Traits* (DRY) para garantizar el cumplimiento de normativas de privacidad del usuario que lo utiliza.
 
-2. **Frontend (Panel Administrativo IAM):** Una interfaz reactiva integrada dentro de Astro utilizando componentes de React bajo la arquitectura de islas. Este dashboard simula un centro de control de accesos, consume la API REST del backend inyectando los tokens mediante interceptores HTTP, y emplea bloqueos de estado perimetrales (Custom Events) para prevenir condiciones de carrera (*Race Conditions*) durante operaciones asíncronas.
+2. **Frontend (Panel Administrativo IAM):** Una interfaz reactiva integrada dentro de Astro utilizando componentes de React bajo la arquitectura de islas. Este dashboard simula un centro de control de accesos, consume la API REST del backend inyectando los tokens mediante interceptores HTTP, y emplea bloqueos de estado perimetrales (Custom Events) para prevenir *Race Conditions* durante operaciones asíncronas.
 
 ## Guía de Pruebas (RBAC)
 

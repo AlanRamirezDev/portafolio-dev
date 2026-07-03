@@ -7,15 +7,15 @@ status: "Completado"
 
 ## El Desafío Arquitectónico
 
-En plataformas de inversión, procesar inyecciones de capital programadas y conversiones de divisas presenta un desafío crítico de concurrencia. La gestión inconsistente de transacciones distribuidas o la falta de bloqueos adecuados durante la volatilidad del tipo de cambio pueden generar desbalances en los portafolios de los usuarios. El objetivo fue diseñar un motor capaz de orquestar estos flujos garantizando consistencia absoluta y exponerlo a través de un Sandbox interactivo de alta fidelidad.
+En plataformas de inversión distribuidas, procesar inyecciones de capital y operaciones de intercambio de divisas presenta un desafío crítico de concurrencia y consistencia de datos. La falta de aislamiento transaccional estricto ante peticiones HTTP simultáneas puede provocar Race Conditions, derivando en balances inconsistentes o pérdida de integridad financiera. El objetivo principal fue diseñar un motor transaccional robusto alineado con las propiedades ACID, capaz de mitigar mutaciones concurrentes a nivel de infraestructura y exponer un Sandbox interactivo de alta fidelidad sin comprometer la estabilidad del hardware.
 
 ## Solución Técnica Multicapa
 
-Para resolver este desafío de manera integral, se diseñó e integró un ecosistema de dos capas completamente independiente pero sincronizado:
+Para resolver este desafío de manera integral, se estructuró un ecosistema desacoplado y blindado en ambas capas operativas:
 
-1. **Backend (Motor de Inversión):** Arquitectura limpia basada en Spring Boot 3. El motor aísla la lógica de negocio de las integraciones externas y asegura propiedades ACID mediante el manejo estricto del contexto transaccional (`@Transactional`). Para garantizar la integridad financiera en las conversiones de divisas, se utilizó aritmética de precisión arbitraria (`BigDecimal`) con políticas de redondeo estrictas (`RoundingMode.HALF_UP`), evitando la pérdida de centavos típica con decimales.
+1. **Backend (Motor de Alta Disponibilidad y Concurrencia):** Arquitectura empresarial basada en Spring Boot 3 y Java 21. El servicio implementa un esquema de **Bloqueo Pesimista** (`PESSIMISTIC_WRITE`) mediante Spring Data JPA, forzando a PostgreSQL a congelar la fila del registro financiero durante las mutaciones, garantizando consistencia absoluta ante tráfico paralelo masivo. El perímetro HTTP está asegurado mediante validaciones declarativas estrictas (`@Valid` de Jakarta), procesadas por un interceptor global de excepciones (`@ControllerAdvice`) que formatea respuestas limpias para el cliente. La capa de infraestructura optimiza el pool de conexiones mediante **HikariCP** y empaqueta el entorno en imágenes optimizadas con *Multi-stage Alpine Docker* para reducir drásticamente el tiempo de inicio.
 
-2. **Frontend (Sandbox Interactivo):** Una SPA reactiva integrada dentro de Astro utilizando componentes de React. Este tablero simula una terminal financiera real, consume la API REST del backend de forma asíncrona, gestiona estados defensivos frente a caídas del servidor y provee un log en tiempo real de los flujos de red (HTTP Requests/Responses).
+2. **Frontend (Sandbox de Observabilidad y UX Defensiva):** Una interfaz SPA reactiva integrada de forma nativa en Astro mediante componentes aislados de React. El dashboard implementa estados de envío restrictivos (`isSubmitting`) y filtros lógicos por expresiones regulares en inputs de texto, bloqueando caracteres no paramétricos desde la interfaz de usuario. El control asíncrono gestiona de forma preventiva las Race Conditions mediante la emisión de *Custom Events* en el DOM que congelan la barra de navegación de Astro durante las transacciones de red. Además, el flujo de actualización separa el renderizado inicial de los refrescos de datos en segundo plano, previniendo el colapso del árbol de componentes.
 
 ### Fragmento de Implementación
 
@@ -26,17 +26,20 @@ Para resolver este desafío de manera integral, se diseñó e integró un ecosis
             throw new IllegalArgumentException("El monto y el tipo de cambio deben ser mayores a cero.");
         }
 
-        Portafolio portafolio = obtenerPortafolio(usuarioId);
+        // Bloqueo a nivel de BD:
+        // Evita que el saldo mute entre la lectura y la deducción del Swap
+        Portafolio portafolio = portafolioRepository.findByUsuarioIdForUpdate(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró un portafolio activo para el usuario: " + usuarioId));
 
         if (portafolio.getBalanceMxn().compareTo(montoMxn) < 0) {
             throw new IllegalStateException("Saldo insuficiente para realizar la compra.");
         }
 
+        // Ejecución de transacciones
         BigDecimal nuevoBalanceMxn = portafolio.getBalanceMxn().subtract(montoMxn);
         portafolio.setBalanceMxn(nuevoBalanceMxn);
 
         BigDecimal usdcComprados = montoMxn.divide(tipoCambio, 4, RoundingMode.HALF_UP);
-
         BigDecimal nuevoBalanceUsdc = portafolio.getBalanceUsdc().add(usdcComprados);
         portafolio.setBalanceUsdc(nuevoBalanceUsdc);
 

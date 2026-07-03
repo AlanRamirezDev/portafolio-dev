@@ -26,10 +26,11 @@ Este proyecto actúa como un HUB central interactivo diseñado bajo una arquitec
 
 ### 1. Sandbox Interactivo: Motor Transaccional de Inversiones
 Ecosistema Fullstack integrado como un componente modular vivo dentro de la arquitectura del portafolio.
-* **Integración Viva en la Nube:** Consumo de peticiones asíncronas reales hacia un backend robusto en Spring Boot 3 (Java 21) desplegado en Render.
-* **Persistencia Real:** Sincronizado con una base de datos PostgreSQL Serverless (Neon DB) que refleja los balances y mutaciones de datos en tiempo real bajo estrictas propiedades ACID.
-* **UI Reactiva Defensiva:** Desarrollado con React. Intercepta códigos de estado HTTP anómalos (500/404) para autogestionar la inicialización transparente de registros de prueba ante bases de datos vacías.
-* **Logger de Red Integrado:** Emula una terminal financiera en la interfaz que despliega visualmente el ciclo de vida completo de las peticiones (HTTP Requests/Responses).
+* **Integración Viva en la Nube:** Consumo de peticiones asíncronas bajo semántica REST (`PUT`/`POST`) hacia un backend robusto en Spring Boot 3 (Java 21) optimizado con HikariCP.
+* **Persistencia y Concurrencia ACID:** Sincronizado con una base de datos PostgreSQL que implementa un esquema de **Bloqueo Pesimista (`PESSIMISTIC_WRITE`)** a nivel de esquema, mitigando Race Conditions ante mutaciones simultáneas de saldo.
+* **Perímetro Seguro y Gestión de Errores:** Datos de entrada sanitizados en tiempo real mediante expresiones regulares en el cliente y blindados en el servidor con validaciones Jakarta (`@Valid`). Centralizado a través de un interceptor de excepciones global (`@ControllerAdvice`).
+* **UI Reactiva Defensiva y UX Perimetral:** Desarrollado en React y Astro. Emite *Custom Events* para congelar la navegación global del portafolio durante los ciclos de red activos y separa la carga inicial de las actualizaciones de datos en segundo plano, previniendo el colapso del DOM y asegurando la estabilidad del scroll.
+* **Logger de Red Integrado:** Módulo de observabilidad acoplado a la interfaz que emula una terminal financiera, desplegando visualmente el ciclo de vida completo de los intercambios (HTTP Requests/Responses).
 
 ### 2. Micro-Frontend: Gestión de Identidad y Accesos (IAM)
 Sistema de control de seguridad integrado al Hub mediante enrutamiento aislado y consumo de una API RESTful protegida.
@@ -50,7 +51,7 @@ Microservicio diseñado para consolidar y exportar información crítica del eco
 * **Patrón Strategy y Clean Architecture:** Backend desarrollado en PHP 8.3 y Laravel, implementando el patrón *Strategy* para la generación polimórfica de documentos (PDF/CSV), respetando el principio Open/Closed Principle de SOLID.
 * **Procesamiento Óptimo en Memoria:** Manipulación de flujos de datos (*streams*) directamente en memoria (`php://temp`) para las exportaciones en crudo, evitando escrituras en disco y maximizando la velocidad de respuesta del servidor.
 * **Rate Limiting y Seguridad Perimetral:** Protección estricta de infraestructura mediante middlewares de `throttle` para prevenir abusos y agotamiento de recursos (DoS). Sincronizado con una interfaz que intercepta los códigos HTTP 429.
-* **Consistencia de Contexto y UX Defensiva:** Inyección dinámica de la zona horaria del cliente hacia el motor de renderizado, y aplicación de bloqueos perimetrales del DOM mediante *Custom Events* para prevenir condiciones de carrera durante procesos asíncronos pesados.
+* **Consistencia de Contexto y UX Defensiva:** Inyección dinámica de la zona horaria del cliente hacia el motor de renderizado, y aplicación de bloqueos perimetrales del DOM mediante *Custom Events* para prevenir Race Conditions durante procesos asíncronos pesados.
 
 ---
 
