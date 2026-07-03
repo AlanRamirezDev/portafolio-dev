@@ -5,6 +5,7 @@ const API_BASE_URL = import.meta.env.PUBLIC_REPORTERIA_API_URL ||
 
 const reporteriaApi = axios.create({
     baseURL: API_BASE_URL,
+    timeout: 100000, 
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'

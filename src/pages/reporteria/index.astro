@@ -6,8 +6,8 @@ import ReporteriaDashboard from '../../components/reporteria/ReporteriaDashboard
 <Layout title="Generador de Reportes | Portafolio">
   <main class="max-w-4xl mx-auto p-8 mt-4">
     
-    <a href="/" class="text-accent hover:text-accent/80 mb-8 inline-flex items-center gap-2 font-mono text-sm transition-colors">
-      <span>&lt;-</span> Volver al inicio
+    <a href="/" id="back-home-link" class="text-accent hover:text-accent/80 mb-8 inline-flex items-center gap-2 font-mono text-sm transition-colors">
+      <span aria-hidden="true">&lt;-</span> Volver al inicio
     </a>
 
     <header class="mb-12 border-b border-white/10 pb-8">
@@ -27,4 +27,18 @@ import ReporteriaDashboard from '../../components/reporteria/ReporteriaDashboard
     <ReporteriaDashboard client:load />
 
   </main>
+
+  {/* Script interceptor para el Bloqueo */}
+  <script>
+    window.addEventListener('reporteria-action', (e) => {
+        const isProcessing = e.detail.active;
+        const backLink = document.getElementById('back-home-link');
+
+        if (isProcessing) {
+            backLink?.classList.add('opacity-50', 'pointer-events-none');
+        } else {
+            backLink?.classList.remove('opacity-50', 'pointer-events-none');
+        }
+    });
+  </script>
 </Layout>

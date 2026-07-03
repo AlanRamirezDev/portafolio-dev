@@ -44,7 +44,7 @@ import reporteriaApi from '../../lib/reporteria/reporteriaApi';
     };
 
     const downloadTemplate = () => {
-        const templateContent = "id,detalle,monto,estado\nTXN-USER,Ejemplo de carga,100.00,Pendiente";
+        const templateContent = "id,detalle,monto,estado\nTXN-USER,\"Ejemplo de carga, con coma\",100.00,Pendiente";
         const blob = new Blob([templateContent], { type: 'text/csv;charset=utf-8;' });
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -72,7 +72,9 @@ import reporteriaApi from '../../lib/reporteria/reporteriaApi';
             const rows = text.split('\n').map(row => row.trim()).filter(row => row !== '');
             
             const parsedData = rows.slice(1).map(row => {
-                const columns = row.split(',');
+                // Ignora las comas que estén dentro de comillas dobles
+                const columns = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(col => col.replace(/^"|"$/g, '').trim());
+                
                 if (columns.length !== 4) return null;
                 
                 return {
@@ -112,6 +114,8 @@ import reporteriaApi from '../../lib/reporteria/reporteriaApi';
         setError(null);
         setLastAction(formato);
 
+        window.dispatchEvent(new CustomEvent('reporteria-action', { detail: { active: true } }));
+
         try {
             // Capturar la zona horaria nativa del sistema operativo/navegador del usuario
             const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -135,10 +139,17 @@ import reporteriaApi from '../../lib/reporteria/reporteriaApi';
             
             setDownloadCount(prev => prev + 1);
         } catch (err) {
-            setServerStatus('offline');
-            setError("El servidor entró en suspensión por inactividad. Por favor, haz clic en 'Encender Servidor' para reactivarlo.");
+            if (err.response?.status === 429) {
+                setError("Has excedido el límite de seguridad de red (10 peticiones/minuto). Por favor, espera un momento para proteger los recursos del servidor.");
+            } else {
+                setServerStatus('offline');
+                setError("El servidor entró en suspensión por inactividad. Por favor, haz clic en 'Encender Servidor' para reactivarlo.");
+            }
         } finally {
             setIsGenerating(false);
+            
+            window.dispatchEvent(new CustomEvent('reporteria-action', { detail: { active: false } }));
+            
             setTimeout(() => setLastAction(null), 3000);
         }
     };
@@ -163,7 +174,7 @@ import reporteriaApi from '../../lib/reporteria/reporteriaApi';
             <div className="bg-surface border border-white/10 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-lg">
                 <div>
                     <h2 className="text-xl font-bold text-white font-sans flex items-center gap-2">
-                        <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg aria-hidden="true" className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
                         Panel de Generación de Reportes
@@ -206,7 +217,7 @@ import reporteriaApi from '../../lib/reporteria/reporteriaApi';
                     <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     <div className="relative z-10">
                         <div className="bg-green-500/10 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg aria-hidden="true" className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                         </div>
@@ -227,7 +238,7 @@ import reporteriaApi from '../../lib/reporteria/reporteriaApi';
                     <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     <div className="relative z-10">
                         <div className="bg-red-500/20 w-12 h-12 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg aria-hidden="true" className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                         </div>
@@ -244,7 +255,7 @@ import reporteriaApi from '../../lib/reporteria/reporteriaApi';
             {error && (
                 <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm font-mono leading-relaxed flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3">
-                        <svg className="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg aria-hidden="true" className="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
                         <span>{error}</span>
@@ -254,7 +265,7 @@ import reporteriaApi from '../../lib/reporteria/reporteriaApi';
                         className="text-red-400 hover:text-red-300 transition-colors shrink-0 p-1 rounded-md hover:bg-red-500/20 cursor-pointer"
                         title="Descartar mensaje"
                     >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg aria-hidden="true" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
@@ -288,7 +299,7 @@ import reporteriaApi from '../../lib/reporteria/reporteriaApi';
                                     }}
                                     className="w-full flex justify-center items-center gap-1.5 text-xs text-slate-300 bg-slate-500/10 hover:bg-slate-500/20 border border-slate-500/30 px-3 py-2 rounded-md font-mono transition-colors cursor-pointer shadow-sm"
                                 >
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg aria-hidden="true" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                     </svg>
                                     Restaurar Datos Originales
@@ -299,14 +310,14 @@ import reporteriaApi from '../../lib/reporteria/reporteriaApi';
                                     onClick={downloadTemplate}
                                     className="w-full sm:w-auto justify-center flex items-center gap-1.5 text-xs text-accent bg-accent/5 hover:bg-accent/10 border border-accent/20 px-3 py-1.5 rounded-md font-mono transition-colors cursor-pointer"
                                 >
-                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg aria-hidden="true" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                     </svg>
                                     Plantilla (.CSV)
                                 </button>
                                 
                                 <label className="w-full sm:w-auto justify-center bg-white/5 hover:bg-white/10 border border-white/10 text-white px-3 py-1.5 rounded-md text-xs font-mono transition-colors cursor-pointer flex items-center gap-2">
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg aria-hidden="true" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                                     </svg>
                                     Cargar Datos
