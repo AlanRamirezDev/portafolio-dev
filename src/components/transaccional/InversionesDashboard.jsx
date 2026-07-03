@@ -2,20 +2,17 @@ import { useState, useEffect, useRef } from 'react';
 import { API_BASE_URL } from '../../lib/transaccional/transaccionalApi';
 
 export default function InversionesDashboard() {
-  // Guardamos el estado de los balances. Inicialmente están en 0.
   const [balances, setBalances] = useState({ mxn: 0, usdc: 0 });
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Estados para capturar los inputs del usuario
   const [montoInyeccion, setMontoInyeccion] = useState('');
   const [montoCompra, setMontoCompra] = useState('');
 
-  // Estado para manejar alertas visuales
   const [notificacion, setNotificacion] = useState({ visible: false, mensaje: '', tipo: '' });
-  const timerRef = useRef(null);
-
-  // Estado para almacenar el historial de eventos (máximo 8 líneas para no saturar)
   const [logs, setLogs] = useState([]);
+  const [lastAction, setLastAction] = useState(null);
+  const timerRef = useRef(null);
 
   // Función para registrar eventos en la terminal
   const agregarLog = (mensaje, tipo = 'info') => {
@@ -36,21 +33,34 @@ export default function InversionesDashboard() {
     }, 4000);
   };
 
-  // Conexión con el backend
-  const obtenerPortafolio = async () => {
+  // Función auxiliar para sanitizar inputs de moneda
+  const manejarCambioInputMoneda = (valor, setter) => {
+    const regexValida = /^\d*\.?\d*$/;
+      if (regexValida.test(valor)) {
+          setter(valor);
+      }
+  };
+
+
+  const obtenerPortafolio = async (isInitialLoad = false) => {
+
+    if (isInitialLoad) setLoading(true);
+
+    window.dispatchEvent(new CustomEvent('transaccional-action', { detail: { active: true } }));
     try {
-      // Consulta al usuario con ID 1 y agrega log
       agregarLog(`GET ${API_BASE_URL}/api/v1/portafolios/1 - Obteniendo datos...`, 'info');
       let response = await fetch(`${API_BASE_URL}/api/v1/portafolios/1`);
 
-      // Si la respuesta es 404 (no existe), lo inicializamos
-      if (!response.ok) {
-        agregarLog(`Portafolio no listo (Status ${response.status}). Inicializando...`, 'warning');
+      if (response.status === 404) {
+        agregarLog(`Portafolio no listo (Status 404). Inicializando...`, 'warning');
         await fetch(`${API_BASE_URL}/api/v1/portafolios/inicializar/1`, { method: 'POST' });
         response = await fetch(`${API_BASE_URL}/api/v1/portafolios/1`);
       }
 
-      // Extraer los datos y actualizar la interfaz
+      if (!response.ok) {
+        throw new Error(`Error del servidor: ${response.status}`);
+      }
+
       const data = await response.json();
       setBalances({ 
         mxn: data.balanceMxn != null ? data.balanceMxn : 0, 
@@ -60,27 +70,29 @@ export default function InversionesDashboard() {
     } catch (error) {
       agregarLog('ERR_CONNECTION - Revisar consola', 'error');
     } finally {
-      setLoading(false);
+      if (isInitialLoad) setLoading(false);
+      window.dispatchEvent(new CustomEvent('transaccional-action', { detail: { active: false } }));
     }
   };
 
-  // Función para inyectar capital
   const inyectarCapital = async () => {
     if (!montoInyeccion || isNaN(montoInyeccion) || Number(montoInyeccion) <= 0) {
       mostrarNotificacion('Por favor, ingrese un monto válido para fondear.', 'error');
       return;
     }
+    setIsSubmitting(true);
+    setLastAction('inyectar');
+    window.dispatchEvent(new CustomEvent('transaccional-action', { detail: { active: true } }));
     try {
-      agregarLog(`POST /api/v1/portafolios/1/inyeccion - Payload: { monto: ${montoInyeccion} }`, 'info');
+      agregarLog(`PUT /api/v1/portafolios/1/inyeccion - Payload: { monto: ${montoInyeccion} }`, 'info');
       const response = await fetch(`${API_BASE_URL}/api/v1/portafolios/1/inyeccion`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ monto: Number(montoInyeccion) })
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ monto: Number(montoInyeccion) })
       });
       
       const data = await response.json();
       
-      // Si el backend responde con un error 400
       if (!response.ok) {
         agregarLog(`400 BAD REQUEST - ${data.error}`, 'error');
         mostrarNotificacion(data.error || 'Ocurrió un error', 'error');
@@ -90,25 +102,32 @@ export default function InversionesDashboard() {
       agregarLog(`200 OK - Capital inyectado`, 'success');
       setMontoInyeccion('');
       mostrarNotificacion('Capital inyectado exitosamente', 'exito');
-      obtenerPortafolio();
+      await obtenerPortafolio();
     } catch (error) {
       agregarLog('500 INTERNAL_ERROR - Falla de red', 'error');
       mostrarNotificacion('Error de conexión con el servidor', 'error');
+    } finally {
+      setIsSubmitting(false);
+      setLastAction(null);
+      window.dispatchEvent(new CustomEvent('transaccional-action', { detail: { active: false } }));
     }
   };
 
-  // Función para comprar USDC simulando un tipo de cambio de 18.50
+  // Función para comprar simulando tipo de cambio a 18.50
   const comprarUsdc = async () => {
     if (!montoCompra || isNaN(montoCompra) || Number(montoCompra) <= 0) {
       mostrarNotificacion('Por favor, ingrese un monto válido para comprar.', 'error');
       return;
     }
+    setIsSubmitting(true);
+    setLastAction('comprar');
+    window.dispatchEvent(new CustomEvent('transaccional-action', { detail: { active: true } }));
     try {
-      agregarLog(`POST /api/v1/portafolios/1/comprar-usdc - Payload: { montoMxn: ${montoCompra} }`, 'info');
+      agregarLog(`PUT /api/v1/portafolios/1/comprar-usdc - Payload: { montoMxn: ${montoCompra} }`, 'info');
       const response = await fetch(`${API_BASE_URL}/api/v1/portafolios/1/comprar-usdc`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ montoMxn: Number(montoCompra), tipoCambio: 18.50 })
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ montoMxn: Number(montoCompra), tipoCambio: 18.50 })
       });
       
       const data = await response.json();
@@ -122,37 +141,48 @@ export default function InversionesDashboard() {
       agregarLog(`200 OK - Swap ejecutado exitosamente`, 'success');
       setMontoCompra('');
       mostrarNotificacion('Compra de USDC exitosa', 'exito');
-      obtenerPortafolio();
+      await obtenerPortafolio();
     } catch (error) {
       agregarLog('500 INTERNAL_ERROR - Falla de red', 'error');
       mostrarNotificacion('Error de conexión con el servidor', 'error');
+    } finally {
+      setIsSubmitting(false);
+      setLastAction(null);
+      window.dispatchEvent(new CustomEvent('transaccional-action', { detail: { active: false } }));
     }
   };
 
-  // Función para dejar el portafolio en 0 (reinicio)
   const reiniciarPortafolio = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setLastAction('reset');
+    window.dispatchEvent(new CustomEvent('transaccional-action', { detail: { active: true } }));
     try {
-      agregarLog('POST /api/v1/portafolios/1/reiniciar - Limpieza...', 'warning');
-      await fetch(`${API_BASE_URL}/api/v1/portafolios/1/reiniciar`, { method: 'POST' });
+      agregarLog('PUT /api/v1/portafolios/1/reiniciar - Limpieza...', 'warning');
+      await fetch(`${API_BASE_URL}/api/v1/portafolios/1/reiniciar`, { method: 'PUT' });
       agregarLog('200 OK - Base de datos restablecida', 'success');
       mostrarNotificacion('Balances reiniciados', 'exito');
-      obtenerPortafolio();
+      await obtenerPortafolio();
     } catch (error) {
       agregarLog('500 INTERNAL_ERROR - No se pudo reiniciar', 'error');
+    } finally {
+      setIsSubmitting(false);
+      setLastAction(null);
+      window.dispatchEvent(new CustomEvent('transaccional-action', { detail: { active: false } }));
     }
   };
 
   useEffect(() => {
-    obtenerPortafolio();
+    obtenerPortafolio(true);
   }, []);
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center space-y-4 bg-[#171717] rounded-xl border border-zinc-800">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+      <div className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center space-y-4 bg-surface rounded-xl border border-white/5 shadow-2xl mt-8">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
         <div className="space-y-2 animate-pulse">
-          <h3 className="text-xl font-semibold text-white">Conectando con el motor de inversiones...</h3>
-          <p className="text-xs text-zinc-400 max-w-md mx-auto leading-relaxed">
+          <h3 className="text-xl font-semibold text-white">Conectando con el motor transaccional...</h3>
+          <p className="text-xs text-text/50 max-w-md mx-auto leading-relaxed">
             ⏳ Nota: El backend utiliza una capa gratuita en la nube. Si es la primera carga tras un periodo de inactividad, el servidor puede tardar hasta 60 segundos en iniciar. Agradezco tu paciencia.
           </p>
         </div>
@@ -192,24 +222,27 @@ export default function InversionesDashboard() {
       {/* Botón para resetear valores */}
       <div>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pt-4">
-          <h2 className="text-2xl font-bold text-white">Portafolio Demo</h2>
+          <h2 className="text-2xl font-bold text-white tracking-tight">Portafolio Demo</h2>
           <button 
             onClick={reiniciarPortafolio}
-            className="text-sm font-mono text-text hover:text-red-400 transition-colors border border-white/10 hover:border-red-400 px-3 py-1 rounded-md whitespace-nowrap"
+            disabled={isSubmitting}
+            className={`text-sm font-mono text-text border border-white/10 hover:border-red-400 hover:text-red-400 px-3 py-1 rounded-md whitespace-nowrap transition-all ${
+              isSubmitting && lastAction === 'reset' ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
             title="Reiniciar balances a cero"
           >
-            [ Resetear Datos ]
+            {isSubmitting && lastAction === 'reset' ? '[ Limpiando... ]' : '[ Resetear Datos ]'}
           </button>
         </div>
       
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-[#121212] p-6 rounded-xl border border-white/10 text-center shadow-inner">
+          <div className="bg-background p-6 rounded-xl border border-white/5 text-center shadow-inner">
             <span className="text-sm font-mono text-text uppercase tracking-widest">Balance (MXN)</span>
             <p className="text-4xl font-bold mt-3 text-white truncate" title={`$${balances.mxn.toFixed(2)}`}>
               ${balances.mxn.toFixed(2)}
             </p>
           </div>
-          <div className="bg-[#121212] p-6 rounded-xl border border-white/10 text-center shadow-inner">
+          <div className="bg-background p-6 rounded-xl border border-white/5 text-center shadow-inner">
             <span className="text-sm font-mono text-text uppercase tracking-widest">Cripto (USDC)</span>
             <p className="text-4xl font-bold mt-3 text-accent truncate" title={`${balances.usdc.toFixed(2)} USDC`}>
               {balances.usdc.toFixed(2)} USDC
@@ -218,53 +251,57 @@ export default function InversionesDashboard() {
         </div>
       </div>
 
-      <div className="border-t border-white/10 pt-6">
+      <div className="border-t border-white/5 pt-6">
         <h3 className="text-lg font-semibold text-white mb-6">Ejecutar Operaciones</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Panel de Inyección */}
           <div className="flex flex-col gap-3">
-            <label className="text-sm font-mono text-text">1. AGREGAR FONDOS</label>
+            <label className="text-sm font-mono text-text uppercase tracking-wider">1. AGREGAR FONDOS</label>
             <div className="flex gap-2">
               <input 
-                type="number" 
-                placeholder="Cantidad en MXN" 
+                type="text" 
+                placeholder="MXN to convert" 
                 value={montoInyeccion}
-                onChange={(e) => setMontoInyeccion(e.target.value)}
-                className="bg-[#121212] border border-white/10 rounded-lg px-4 py-2 text-white w-full focus:outline-none focus:border-accent transition-colors"
+                disabled={isSubmitting}
+                onChange={(e) => manejarCambioInputMoneda(e.target.value, setMontoInyeccion)}
+                className="bg-background border border-white/10 rounded-lg px-4 py-2 text-white w-full focus:outline-none focus:border-accent transition-all disabled:opacity-50"
               />
               <button 
                 onClick={inyectarCapital}
-                className="bg-white text-black font-bold px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors whitespace-nowrap"
+                disabled={isSubmitting}
+                className="bg-white text-black font-bold px-4 py-2 rounded-lg hover:bg-gray-200 transition-all whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Inyectar
+                {isSubmitting && lastAction === 'inyectar' ? 'Procesando...' : 'Inyectar'}
               </button>
             </div>
           </div>
 
           {/* Panel de Compra USDC */}
           <div className="flex flex-col gap-3">
-            <label className="text-sm font-mono text-text">2. CONVERTIR A USDC (T.C. 18.50)</label>
+            <label className="text-sm font-mono text-text uppercase tracking-wider">2. CONVERTIR A USDC (T.C. 18.50)</label>
             <div className="flex gap-2">
               <input 
-                type="number" 
-                placeholder="Monto a usar (MXN)" 
+                type="text" 
+                placeholder="Cantidad USDC" 
                 value={montoCompra}
-                onChange={(e) => setMontoCompra(e.target.value)}
-                className="bg-[#121212] border border-white/10 rounded-lg px-4 py-2 text-white w-full focus:outline-none focus:border-accent transition-colors"
+                disabled={isSubmitting}
+                onChange={(e) => manejarCambioInputMoneda(e.target.value, setMontoCompra)}
+                className="bg-background border border-white/10 rounded-lg px-4 py-2 text-white w-full focus:outline-none focus:border-accent transition-all disabled:opacity-50"
               />
               <button 
                 onClick={comprarUsdc}
-                className="bg-accent text-background font-bold px-4 py-2 rounded-lg hover:bg-accent/80 transition-colors whitespace-nowrap"
+                disabled={isSubmitting}
+                className="bg-accent text-background font-bold px-4 py-2 rounded-lg hover:bg-accent/80 transition-all whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Comprar
+                {isSubmitting && lastAction === 'comprar' ? 'Procesando...' : 'Comprar'}
               </button>
             </div>
           </div>
         </div>
       </div>
       {/* Terminal de Logs */}
-      <div className="border-t border-white/10 pt-6">
+      <div className="border-t border-white/5 pt-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-3 gap-2">
           <h3 className="text-sm font-mono text-text flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
@@ -277,10 +314,10 @@ export default function InversionesDashboard() {
         
         <div className="bg-black/50 p-4 rounded-lg border border-white/5 font-mono text-xs overflow-y-auto h-48 flex flex-col shadow-inner">
           {logs.map((log) => (
-            <div key={log.id} className="py-1 flex gap-3 border-b border-white/5 last:border-0 opacity-90 hover:opacity-100 transition-opacity">
+            <div key={log.id} className="py-1 flex gap-3 border-b border-white/5 last:border-0 opacity-90 hover:opacity-100 transition-opacity whitespace-pre-wrap">
               <span className="text-gray-500 shrink-0">[{log.hora}]</span>
               <span className={`
-                ${log.tipo === 'success' ? 'text-green-400' : ''}
+                ${log.tipo === 'success' ? 'text-emerald-400' : ''}
                 ${log.tipo === 'error' ? 'text-red-400' : ''}
                 ${log.tipo === 'warning' ? 'text-yellow-400' : ''}
                 ${log.tipo === 'info' ? 'text-blue-300' : ''}
