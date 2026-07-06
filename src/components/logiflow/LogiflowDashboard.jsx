@@ -105,11 +105,13 @@ export default function LogiflowDashboard() {
     const [logs, setLogs] = useState(getInitialLogs());
     const [isQuerying, setIsQuerying] = useState(false);
     const [terminalInput, setTerminalInput] = useState('');
-    const logsEndRef = useRef(null); 
+    const terminalRef = useRef(null); 
     const fileInputRef = useRef(null);
 
     useEffect(() => {
-        if (logsEndRef.current) logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        if (terminalRef.current) {
+            terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+        }
     }, [logs]);
 
     useEffect(() => {
@@ -655,7 +657,7 @@ export default function LogiflowDashboard() {
                                     </button>
                                 </div>
                                 
-                                <div className="bg-[#0a0a0a] rounded-t-lg border border-white/5 border-b-0 font-mono text-xs overflow-y-auto h-32 flex flex-col shadow-inner">
+                                <div ref={terminalRef} className="bg-[#0a0a0a] rounded-t-lg border border-white/5 border-b-0 font-mono text-xs overflow-y-auto h-32 flex flex-col shadow-inner">
                                     <div className="p-4 flex flex-col">
                                         {logs.map((log) => (
                                             <div key={log.id} className="py-1 flex gap-3 opacity-90">
@@ -671,7 +673,6 @@ export default function LogiflowDashboard() {
                                                 </span>
                                             </div>
                                         ))}
-                                        <div ref={logsEndRef} />
                                     </div>
                                 </div>
                                 
