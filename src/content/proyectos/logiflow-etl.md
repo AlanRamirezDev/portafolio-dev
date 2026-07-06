@@ -1,8 +1,8 @@
 ---
 title: "Pipeline de Ingesta Asíncrona (ETL)"
-description: "Microservicio de alto rendimiento para la ingesta masiva de telemetría logística. Arquitectura tolerante a fallos con procesamiento por lotes (chunks) y concurrencia optimizada."
+description: "Microservicio de alto rendimiento para la ingesta masiva de telemetría logística. Arquitectura tolerante a fallos, procesamiento distribuido con Hilos Virtuales, JDBC Batching y defensas multicapa."
 tech: ["Java 21", "Spring Boot 3", "Spring Batch", "PostgreSQL", "React", "Astro", "Tailwind CSS"]
-status: "En desarrollo"
+status: "Completado"
 ---
 
 ## El Desafío Arquitectónico
@@ -11,13 +11,15 @@ El procesamiento de archivos masivos en aplicaciones web tradicionales suele pro
 
 ## Solución Técnica y Rendimiento
 
-Para resolver este cuello de botella, se construyó un microservicio especializado en la extracción, transformación y carga (ETL) de datos:
+Para resolver este cuello de botella y garantizar un entorno de producción sólido, se construyó un microservicio especializado en la extracción, transformación y carga (ETL) de datos.
 
-1. **Procesamiento Asíncrono (Virtual Threads):** Desarrollado en Java 21 y Spring Boot 3, el motor delega la lectura de archivos a hilos virtuales, liberando el controlador REST inmediatamente (`202 Accepted`) para mantener la interfaz de usuario reactiva.
-2. **Gestión de Memoria (Spring Batch):** Se implementó una arquitectura de lectura en disco mediante Java NIO y procesamiento en lotes (*chunks*). El sistema fragmenta archivos de cientos de miles de registros en bloques controlados, optimizando las inserciones masivas en PostgreSQL y previniendo el desbordamiento de memoria (OOM).
-3. **Resiliencia y Tolerancia a Fallos:** El procesador incluye validaciones estrictas (`SkipPolicy`) que aíslan y descartan filas corruptas (ej. errores de parseo en el CSV) de forma silenciosa, garantizando que un error aislado en un vehículo no detenga la ejecución completa de la flotilla.
+1. **Concurrencia con Hilos Virtuales (Java 21):** El motor ETL delega la ejecución de los lotes de procesamiento a un `TaskExecutorAdapter` acoplado a hilos virtuales. Esto permite procesar fragmentos del archivo en paralelo sin agotar el pool de hilos físicos del contenedor, manteniendo la interfaz de usuario 100% reactiva.
+2. **Bulk Inserts (JDBC Batching):** OPtimización de la capa ORM (Hibernate) y el Driver PostgreSQL para agrupar inserciones. Alineación del tamaño del lote (`chunk(500)`) con el pre-asignador de secuencias (`allocationSize=500`) para reescribir sentencias por lotes.
+3. **Seguridad y Resiliencia Multicapa:** * **Bloqueo de Colisiones (TOCTOU):** Intercepción y bloqueo peticiones simultáneas (Race Conditions).
+   * **WAF Simulado:** Defensa activa contra ataques de Inyección SQL en la terminal interactiva de lectura mediante expresiones regulares y aislamiento transaccional (`readOnly = true`).
+   * **Tolerancia a Fallos:** El procesador incluye validaciones estrictas (`SkipPolicy`) que aíslan y descartan filas corruptas sin abortar el *Job* completo, garantizando una carga transparente y continua.
 
-## Fragmento de Implementación (Configuración de Lotes y Resiliencia)
+## Fragmento de Implementación (Procesamiento Concurrente y Resiliencia)
 
 ```java
 @Bean
@@ -25,7 +27,8 @@ public Step importTelemetryStep(JobRepository jobRepository,
                                 PlatformTransactionManager transactionManager,
                                 FlatFileItemReader<TelemetryCsvRecord> reader,
                                 TelemetryItemProcessor processor,
-                                RepositoryItemWriter<LogiflowTelemetry> writer) {
+                                RepositoryItemWriter<LogiflowTelemetry> writer,
+                                TaskExecutor taskExecutor) {
     
     return new StepBuilder("importTelemetryStep", jobRepository)
             // Procesamiento eficiente en bloques de 500 registros
@@ -33,9 +36,12 @@ public Step importTelemetryStep(JobRepository jobRepository,
             .reader(reader)
             .processor(processor)
             .writer(writer)
+            // Inyección de hilos virtuales para procesamiento paralelo de los Chunks
+            .taskExecutor(taskExecutor)
             // Arquitectura Fault-Tolerant: Salta registros corruptos sin abortar el Job
             .faultTolerant()
-            .skip(FlatFileParseException.class) 
+            .skip(FlatFileParseException.class)
+            .skip(Exception.class)
             .skipLimit(500) 
             .build();
 }
