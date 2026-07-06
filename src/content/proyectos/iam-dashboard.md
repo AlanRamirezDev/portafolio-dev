@@ -13,7 +13,7 @@ En plataformas que manejan información sensible, el control de acceso y la traz
 
 Para resolver este desafío de manera integral, se diseñó e integró un ecosistema de dos capas completamente independiente pero sincronizado:
 
-1. **Backend (Motor de Identidad y Seguridad):** Arquitectura construida sobre Laravel 13. El núcleo aísla la lógica de autenticación (JWT) y protege los endpoints mediante un middleware personalizado (`CheckRole`), asegurando que solo usuarios con privilegios específicos interactúen con la base de datos. Además, implementa un registro de auditoría inmutable que anonimiza direcciones IP utilizando *Traits* (DRY) para garantizar el cumplimiento de normativas de privacidad del usuario que lo utiliza.
+1. **Backend (Motor de Identidad y Seguridad):** Arquitectura construida sobre Laravel 13. El núcleo aísla la lógica de autenticación (JWT) y protege los endpoints mediante un middleware personalizado (`CheckRole`), asegurando que solo usuarios con privilegios específicos interactúen con la base de datos. Además, implementa un registro de auditoría inmutable que anonimiza direcciones IP utilizando *Traits* (DRY) para garantizar el cumplimiento de normativas de privacidad del usuario que lo utiliza (modo demo).
 
 2. **Frontend (Panel Administrativo IAM):** Una interfaz reactiva integrada dentro de Astro utilizando componentes de React bajo la arquitectura de islas. Este dashboard simula un centro de control de accesos, consume la API REST del backend inyectando los tokens mediante interceptores HTTP, y emplea bloqueos de estado perimetrales (Custom Events) para prevenir *Race Conditions* durante operaciones asíncronas.
 
@@ -22,7 +22,7 @@ Para resolver este desafío de manera integral, se diseñó e integró un ecosis
 El Microservicio incluye tres perfiles preconfigurados para evaluar las restricciones del middleware:
 
 * **Administrador:** Acceso total. Puede crear y dar de baja o alta usuarios e inyectar tráfico de prueba.
-* **Auditor:** Acceso de solo lectura. Puede visualizar la bitácora inmutable, pero no puede alterar registros.
+* **Auditor:** Acceso de solo lectura. Puede visualizar la bitácora, pero no puede alterar registros.
 * **Operador:** Acceso denegado. Perfil básico sin privilegios para interactuar con los módulos administrativos.
 
 ### Fragmento de Implementación

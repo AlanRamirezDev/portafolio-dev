@@ -5,7 +5,22 @@ import HeroDual from '../components/hub/HeroDual.jsx';
 import TechMatrix from '../components/hub/TechMatrix.jsx';
 import ExperienceTimeline from '../components/hub/ExperienceTimeline.jsx';
 
-const proyectos = await getCollection('proyectos');
+const ordenProyectos = [
+    'motor-inversiones',
+    'api-reporteria',
+    'logiflow-etl',
+    'iam-dashboard'
+];
+
+const proyectos = (await getCollection('proyectos')).sort((a, b) => {
+    const indexA = ordenProyectos.indexOf(a.id);
+    const indexB = ordenProyectos.indexOf(b.id);
+
+    const pesoA = indexA === -1 ? 999 : indexA;
+    const pesoB = indexB === -1 ? 999 : indexB;
+
+    return pesoA - pesoB;
+});
 ---
 
 <Layout>

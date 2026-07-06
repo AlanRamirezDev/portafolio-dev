@@ -7,19 +7,19 @@ status: "Completado"
 
 ## El Desafío Arquitectónico
 
-El procesamiento de archivos masivos en aplicaciones web tradicionales suele provocar bloqueos en el hilo principal del servidor (timeouts) y saturación de memoria RAM, degradando la experiencia del usuario. En sistemas logísticos, donde miles de vehículos transmiten coordenadas y telemetría constantemente, es vital procesar esta información sin interrumpir la operatividad del sistema central ni sobrecargar la base de datos con inserciones individuales.
+El procesamiento de archivos masivos en aplicaciones web tradicionales suele provocar bloqueos en el hilo principal del servidor (timeouts) y saturación de memoria RAM, degradando la experiencia del usuario. En sistemas logísticos, por ejemplo, sistemas con miles de vehículos que transmiten coordenadas y telemetría constantemente, es vital procesar esta información sin interrumpir la operatividad del sistema central ni sobrecargar la base de datos con inserciones individuales.
 
 ## Solución Técnica y Rendimiento
 
 Para resolver este cuello de botella y garantizar un entorno de producción sólido, se construyó un microservicio especializado en la extracción, transformación y carga (ETL) de datos.
 
 1. **Concurrencia con Hilos Virtuales (Java 21):** El motor ETL delega la ejecución de los lotes de procesamiento a un `TaskExecutorAdapter` acoplado a hilos virtuales. Esto permite procesar fragmentos del archivo en paralelo sin agotar el pool de hilos físicos del contenedor, manteniendo la interfaz de usuario 100% reactiva.
-2. **Bulk Inserts (JDBC Batching):** OPtimización de la capa ORM (Hibernate) y el Driver PostgreSQL para agrupar inserciones. Alineación del tamaño del lote (`chunk(500)`) con el pre-asignador de secuencias (`allocationSize=500`) para reescribir sentencias por lotes.
+2. **Bulk Inserts (JDBC Batching):** Optimización de la capa ORM (Hibernate) y el Driver PostgreSQL para agrupar inserciones. Alineación del tamaño del lote (`chunk(500)`) con el pre-asignador de secuencias (`allocationSize=500`) para reescribir sentencias por lotes.
 3. **Seguridad y Resiliencia Multicapa:** * **Bloqueo de Colisiones (TOCTOU):** Intercepción y bloqueo peticiones simultáneas (Race Conditions).
    * **WAF Simulado:** Defensa activa contra ataques de Inyección SQL en la terminal interactiva de lectura mediante expresiones regulares y aislamiento transaccional (`readOnly = true`).
    * **Tolerancia a Fallos:** El procesador incluye validaciones estrictas (`SkipPolicy`) que aíslan y descartan filas corruptas sin abortar el *Job* completo, garantizando una carga transparente y continua.
 
-## Fragmento de Implementación (Procesamiento Concurrente y Resiliencia)
+## Fragmento de Implementación
 
 ```java
 @Bean

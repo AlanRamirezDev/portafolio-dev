@@ -23,7 +23,9 @@ export default function InversionesDashboard() {
     });
   };
 
-  const limpiarLogs = () => setLogs([]);
+  const limpiarLogs = () => {
+    setLogs([{ id: Date.now(), hora: new Date().toLocaleTimeString(), tipo: 'info', mensaje: 'Consola limpiada.' }]);
+  };
 
   const mostrarNotificacion = (mensaje, tipo) => {
     if (timerRef.current) clearTimeout(timerRef.current);

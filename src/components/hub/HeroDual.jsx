@@ -47,7 +47,7 @@ export default function HeroDual() {
               Ingeniero en Informática <span className="text-accent/60">|</span> Full Stack Developer
             </h2>
             <p className="text-lg md:text-xl text-gray-400 leading-relaxed max-w-2xl mb-2">
-              Especializado en el diseño y construcción de soluciones de software robustas y escalables. Priorizo el código limpio, las mejores prácticas de ingeniería y una visión completa del ciclo de vida, desde el desarrollo local hasta la producción.
+              Especializado en arquitecturas de escalables de alto rendimiento. Traduzco lógica de negocio compleja en plataformas resilientes, priorizando la concurrencia segura, el código limpio y la tolerancia a fallos desde el desarrollo local hasta el despliegue en producción, incluyendo pruebas de calidad.
             </p>
           </div>
         ) : (

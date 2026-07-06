@@ -36,7 +36,7 @@ const logros = [
     id: 'logro-1',
     hash: 'b1c2d34',
     titulo: 'Ingeniero en Informática (Titulado)',
-    entidad: 'IPN "UPIICSA"',
+    entidad: 'Instituo Politécnico Nacional "IPN UPIICSA"',
     periodo: 'Concluido',
     descripcionCorta: 'Formación profesional integral con enfoque en lógica de programación, algoritmos eficientes y diseño arquitectónico.',
     detalles: [
