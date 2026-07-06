@@ -82,6 +82,13 @@ const SimuladorDespacho = () => {
     );
 };
 
+const getInitialLogs = () => [
+    { id: 1, hora: new Date().toLocaleTimeString(), tipo: 'info', mensaje: 'Conexión segura establecida con la Base de Datos.' },
+    { id: 2, hora: new Date().toLocaleTimeString(), tipo: 'success', mensaje: 'INFO: Tabla principal detectada -> logiflow_telemetry' },
+    { id: 3, hora: new Date().toLocaleTimeString(), tipo: 'success', mensaje: 'INFO: Columnas -> trip_id, vehicle_vin, driver_id, timestamp_utc, odometer_km, fuel_consumed_l, vehicle_status, route_code' },
+    { id: 4, hora: new Date().toLocaleTimeString(), tipo: 'info', mensaje: 'Escribe una consulta SQL o utiliza los comandos de prueba rápida para evaluar la seguridad del sistema.' }
+];
+
 export default function LogiflowDashboard() {
     const [isDragging, setIsDragging] = useState(false);
     const [file, setFile] = useState(null);
@@ -91,33 +98,36 @@ export default function LogiflowDashboard() {
     const [totalRecords, setTotalRecords] = useState(0); 
     const [fileError, setFileError] = useState(null); 
     
+    const [safeToClick, setSafeToClick] = useState(false);
+
     // Estados Híbridos: Tabla y Terminal
     const [previewData, setPreviewData] = useState(null);
-    const [logs, setLogs] = useState([
-        { id: 1, hora: new Date().toLocaleTimeString(), tipo: 'info', mensaje: 'Conexión segura establecida con la base de datos.' },
-        { id: 2, hora: new Date().toLocaleTimeString(), tipo: 'success', mensaje: 'INFO: Tabla principal detectada -> logiflow_telemetry' },
-        { id: 3, hora: new Date().toLocaleTimeString(), tipo: 'success', mensaje: 'INFO: Columnas -> trip_id, vehicle_vin, driver_id, timestamp_utc, odometer_km, fuel_consumed_l, vehicle_status, route_code' },
-        { id: 4, hora: new Date().toLocaleTimeString(), tipo: 'info', mensaje: 'Escribe una consulta SQL o utiliza los comandos de prueba rápida para evaluar la seguridad del sistema.' }
-    ]);
+    const [logs, setLogs] = useState(getInitialLogs());
     const [isQuerying, setIsQuerying] = useState(false);
     const [terminalInput, setTerminalInput] = useState('');
     const logsEndRef = useRef(null); 
     const fileInputRef = useRef(null);
 
     useEffect(() => {
-        if (logsEndRef.current) {
-            logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
+        if (logsEndRef.current) logsEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }, [logs]);
 
     useEffect(() => {
         if (fileError) {
-            const timer = setTimeout(() => {
-                setFileError(null);
-            }, 4000);
+            const timer = setTimeout(() => setFileError(null), 4000);
             return () => clearTimeout(timer);
         }
     }, [fileError]);
+
+    // Evitar clics accidentales post-carga
+    useEffect(() => {
+        if (status === 'success') {
+            const timer = setTimeout(() => setSafeToClick(true), 1500);
+            return () => clearTimeout(timer);
+        } else {
+            setSafeToClick(false);
+        }
+    }, [status]);
 
     const addLog = (tipo, mensaje) => {
         setLogs(prev => [...prev, { id: Date.now() + Math.random(), hora: new Date().toLocaleTimeString(), tipo, mensaje }]);
@@ -197,7 +207,6 @@ export default function LogiflowDashboard() {
         };
 
         reader.onerror = () => {
-            console.error("Error leyendo archivo local:", reader.error);
             setFileError('Error crítico al procesar el archivo en memoria.');
         };
 
@@ -205,7 +214,6 @@ export default function LogiflowDashboard() {
             const slice = selectedFile.slice(offset, offset + CHUNK_SIZE);
             reader.readAsText(slice);
         };
-        
         readNextChunk();
     };
 
@@ -235,25 +243,24 @@ export default function LogiflowDashboard() {
                     setProcessedRecords(count);
 
                     if (!isRunning) {
-                        stagnantPings++;
-                        if (stagnantPings > 5) {
-                            if (count > 0) {
-                                setStatus('success');
-                            } else {
-                                setStatus('format_error');
-                            }
+                        if (count > 0) {
+                            setStatus('success');
                             clearInterval(pollInterval);
+                        } else {
+                            stagnantPings++;
+                            if (stagnantPings > 5) {
+                                setStatus('format_error');
+                                clearInterval(pollInterval);
+                            }
                         }
                     } else {
                         stagnantPings = 0;
-
                         if (count >= totalRecords && totalRecords > 0) {
                             setStatus('success');
                             clearInterval(pollInterval);
                         }
                     }
                 } catch (error) {
-                    console.error("Error crítico de red consultando el estado:", error);
                     setStatus('error'); 
                     clearInterval(pollInterval); 
                 }
@@ -277,7 +284,6 @@ export default function LogiflowDashboard() {
 
         try {
             await logiflowApi.delete('/reset');
-            
             const response = await logiflowApi.post('/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
@@ -291,7 +297,6 @@ export default function LogiflowDashboard() {
                 setFileError(error.response.data.error || "Proceso denegado por políticas de concurrencia.");
                 setStatus('idle');
             } else {
-                console.error('Error al comunicar con Logiflow:', error);
                 setStatus('error');
             }
         }
@@ -305,7 +310,7 @@ export default function LogiflowDashboard() {
         setTotalRecords(0);
         setTerminalInput('');
         setPreviewData(null);
-        limpiarLogs();
+        setLogs(getInitialLogs()); 
     };
 
     // FLUJO (Muestra Tabla + Terminal)
@@ -319,11 +324,8 @@ export default function LogiflowDashboard() {
             const data = response.data;
             setPreviewData(data);
             
-            if (data.length === 0) {
-                addLog('warning', 'La base de datos está vacía.');
-            } else {
-                addLog('success', `Consulta exitosa. Se renderizó la tabla visual con ${data.length} registros.`);
-            }
+            if (data.length === 0) addLog('warning', 'La base de datos está vacía.');
+            else addLog('success', `Consulta exitosa. Se renderizó la tabla visual con ${data.length} registros.`);
         } catch (error) {
             addLog('error', 'Error conectando con la base de datos.');
         }
@@ -339,7 +341,6 @@ export default function LogiflowDashboard() {
         if (e.key === 'Enter') {
             const query = terminalInput.trim();
             if (!query) return;
-            
             setTerminalInput('');
             await procesarConsulta(query);
         }
@@ -348,11 +349,10 @@ export default function LogiflowDashboard() {
     const procesarConsulta = async (queryText) => {
         addLog('info', `>_ ${queryText}`);
         setIsQuerying(true);
-
         const upperQuery = queryText.toUpperCase();
 
         if (upperQuery.includes('DROP') || upperQuery.includes('DELETE') || upperQuery.includes('TRUNCATE') || upperQuery.includes('ALTER')) {
-            addLog('error', '[SECURITY ALERT] Consulta no permitida o posible inyección SQL destructiva detectada. Petición bloqueada por reglas de seguridad.');
+            addLog('error', '[SECURITY ALERT] Consulta no permitida o posible inyección SQL destructiva detectada. Petición bloqueada.');
             setIsQuerying(false);
             return;
         }
@@ -371,29 +371,26 @@ export default function LogiflowDashboard() {
                 addLog('warning', 'Consulta ejecutada. (0 filas devueltas)');
             } else {
                 addLog('success', `Consulta exitosa. Retornando ${data.length} registros en consola:`);
-
                 data.forEach(row => {
-                    const rowString = Object.entries(row)
-                        .map(([key, value]) => `${key}: ${value}`)
-                        .join(' | ');
+                    const rowString = Object.entries(row).map(([key, value]) => `${key}: ${value}`).join(' | ');
                     addLog('success', `>> { ${rowString} }`);
                 });
             }
         } catch (error) {
-            if (error.response && error.response.data && error.response.data.error) {
+            if (error.response?.data?.error) {
                 addLog('db_error', `[DB ERROR] ${error.response.data.error}`);
             } else {
-                addLog('error', 'Error ejecutando consulta: Conexión rechazada o timeout de BD.');
+                addLog('error', 'Error ejecutando consulta de BD.');
             }
         }
         setIsQuerying(false);
     };
 
     const progressPercentage = totalRecords > 0 ? Math.min((processedRecords / totalRecords) * 100, 100).toFixed(0) : 0;
+    const skippedRecords = totalRecords - processedRecords;
 
     return (
         <div className="w-full mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
             <div className="lg:col-span-1 space-y-6">
                 <div className="bg-surface p-6 rounded-2xl border border-white/5 shadow-lg h-full">
                     <h3 className="text-xl font-bold text-white font-sans mb-4 border-b border-white/10 pb-2">
@@ -403,12 +400,12 @@ export default function LogiflowDashboard() {
                         Imagina una empresa de transporte a nivel nacional. Al final del día, los encargados descargan una bitácora masiva con las rutas, kilometraje y consumo de combustible de sus vehículos.
                     </p>
                     <p className="text-text text-sm leading-relaxed mb-4">
-                        Cargar este archivo (decenas de miles de filas) en un servidor tradicional saturaría la memoria RAM y bloquearía o entorpecería el uso de la plataforma a otros usuarios que interactuen simultáneamente.
+                        Cargar este archivo en un servidor tradicional saturaría la memoria RAM y bloquearía o entorpecería el uso de la plataforma a otros usuarios que interactuen simultáneamente.
                     </p>
                     <div className="bg-accent/10 border border-accent/20 p-4 rounded-xl mt-6">
                         <p className="text-accent text-xs font-mono mb-2 uppercase tracking-wider">La Solución Técnica</p>
                         <p className="text-white text-sm">
-                            Este pipeline delega el trabajo pesado a <strong>Hilos Virtuales de Java 21</strong>, fragmentando el archivo en lotes y procesándolo en segundo plano para mantener la interfaz de usuario siempre responsiva.
+                            Este pipeline delega el trabajo pesado a <strong>Hilos Virtuales de Java 21</strong>, procesando lotes en segundo plano para mantener la interfaz de usuario 100% responsiva.
                         </p>
                     </div>
                 </div>
@@ -455,7 +452,6 @@ export default function LogiflowDashboard() {
                                         <button onClick={() => fileInputRef.current?.click()} className="bg-accent/10 text-accent font-mono text-sm px-6 py-2 rounded-lg border border-accent/20 hover:bg-accent/20 transition-colors">
                                             Cargar archivo
                                         </button>
-                                        
                                         <div className="mt-4 pt-4 border-t border-white/5 w-full">
                                             <p className="text-text text-xs mb-3">¿Prefieres ver el máximo potencial directamente?</p>
                                             <button onClick={downloadMassiveCSV} className="text-xs bg-white/5 text-white px-4 py-2 rounded hover:bg-white/10 transition-colors border border-white/10 shadow-sm">
@@ -474,7 +470,7 @@ export default function LogiflowDashboard() {
                                         </div>
                                         <div className="flex flex-wrap justify-center gap-3 mt-2">
                                             <button onClick={discardFile} className="bg-transparent text-text font-mono text-sm px-6 py-2 rounded-lg border border-white/10 hover:bg-white/5">Descartar</button>
-                                            <button onClick={handleUpload} className="bg-accent text-white font-mono text-sm px-8 py-2 rounded-lg hover:bg-accent/80 shadow-lg shadow-accent/20">Iniciar con el proceso</button>
+                                            <button onClick={handleUpload} className="bg-accent text-white text-sm px-8 py-2 rounded-lg hover:bg-accent/80">Iniciar</button>
                                         </div>
                                     </div>
                                 )}
@@ -501,7 +497,7 @@ export default function LogiflowDashboard() {
                             <div className="flex justify-between items-end mb-4">
                                 <div>
                                     <p className="text-white font-bold text-lg">Inyectando datos logísticos...</p>
-                                    <p className="text-accent font-mono text-sm">HTTP 202 Accepted (Pipeline asíncrono)</p>
+                                    <p className="text-accent font-mono text-sm">HTTP 202 Accepted</p>
                                 </div>
                                 <div className="text-right">
                                     <p className="text-text text-sm">Registros Insertados</p>
@@ -522,11 +518,18 @@ export default function LogiflowDashboard() {
                     )}
 
                     {status === 'success' && (
-                        <div className="flex flex-col h-full flex-1 py-4">
+                        <div className="flex flex-col h-full flex-1 py-4 animate-in fade-in zoom-in duration-300">
                             <div className="flex flex-col items-center text-center mb-6">
                                 <div className="bg-green-500/10 text-green-400 w-12 h-12 flex items-center justify-center rounded-full mb-2 border border-green-500/20"><span className="text-xl">✓</span></div>
-                                <h4 className="text-white font-bold text-xl mb-1">Proceso de Ingesta de Datos Completo</h4>
-                                <p className="text-text text-xs">Se integraron <strong>{totalRecords.toLocaleString()} viajes</strong> en la base de datos.</p>
+                                <h4 className="text-white font-bold text-xl mb-1">Proceso Completado</h4>
+                                <p className="text-text text-sm">Se integraron <strong>{processedRecords.toLocaleString()}</strong> de {totalRecords.toLocaleString()} viajes en la BD.</p>
+                                
+                                {skippedRecords > 0 && (
+                                    <div className="mt-3 bg-yellow-500/10 border border-yellow-500/20 text-yellow-500/90 text-xs px-4 py-2 rounded-lg flex items-center gap-2">
+                                        <span>⚠️</span>
+                                        <span>Se omitieron <strong>{skippedRecords.toLocaleString()}</strong> registros corruptos por tolerancia a fallos.</span>
+                                    </div>
+                                )}
                             </div>
                             
                             {/* TABLA VISUAL */}
@@ -534,10 +537,12 @@ export default function LogiflowDashboard() {
                                 <div className="flex justify-center mb-6">
                                     <button 
                                         onClick={handleInitialQuery}
-                                        disabled={isQuerying}
-                                        className="text-sm font-mono bg-surface hover:bg-accent/10 text-accent/80 px-5 py-2 rounded border border-accent/30 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        disabled={isQuerying || !safeToClick}
+                                        className={`text-sm font-mono bg-surface text-accent/80 px-5 py-2 rounded border border-accent/30 transition-all flex items-center gap-2 ${
+                                            (!safeToClick || isQuerying) ? 'opacity-50 cursor-not-allowed scale-95' : 'hover:bg-accent/10 hover:scale-105 cursor-pointer'
+                                        }`}
                                     >
-                                        🔍 {isQuerying ? 'Consultando...' : 'Generar consulta automática (5 registros)'}
+                                        🔍 {isQuerying ? 'Consultando...' : !safeToClick ? 'Finalizando inserciones...' : 'Generar consulta automática (5 registros)'}
                                     </button>
                                 </div>
                             ) : (
@@ -549,7 +554,7 @@ export default function LogiflowDashboard() {
                                                 <tr>
                                                     <th className="p-2">Viaje</th>
                                                     <th className="p-2">VIN</th>
-                                                    <th className="p-2">Km</th>
+                                                    <th className="p-2 text-accent">Km</th>
                                                     <th className="p-2">Estado</th>
                                                 </tr>
                                             </thead>
@@ -583,16 +588,32 @@ export default function LogiflowDashboard() {
                                 {/* BOTONES DE PRUEBA RÁPIDA */}
                                 <div className="flex flex-wrap gap-2 mb-3">
                                     <span className="text-[10px] font-mono text-gray-500 flex items-center mr-1">Casos de prueba:</span>
-                                    <button onClick={() => ejecutarConsultaRapida("SELECT vehicle_status, COUNT(*) FROM logiflow_telemetry GROUP BY vehicle_status;")} className="text-[10px] font-mono bg-surface hover:bg-green-500/20 text-green-400/70 px-2 py-1 rounded border border-green-500/20 transition-colors">
+                                    <button 
+                                        onClick={() => ejecutarConsultaRapida("SELECT vehicle_status, COUNT(*) FROM logiflow_telemetry GROUP BY vehicle_status;")} 
+                                        disabled={!safeToClick || isQuerying}
+                                        className="text-[10px] font-mono bg-surface hover:bg-green-500/20 text-green-400/70 px-2 py-1 rounded border border-green-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
                                         📊 CONSULTA SIMPLE
                                     </button>
-                                    <button onClick={() => ejecutarConsultaRapida("INSERT INTO logiflow_telemetry (trip_id) VALUES ('TRIP-999');")} className="text-[10px] font-mono bg-surface hover:bg-yellow-500/20 text-yellow-500/70 px-2 py-1 rounded border border-yellow-500/20 transition-colors">
+                                    <button 
+                                        onClick={() => ejecutarConsultaRapida("INSERT INTO logiflow_telemetry (trip_id) VALUES ('TRIP-999');")} 
+                                        disabled={!safeToClick || isQuerying}
+                                        className="text-[10px] font-mono bg-surface hover:bg-yellow-500/20 text-yellow-500/70 px-2 py-1 rounded border border-yellow-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
                                         🛡️ PROBAR RBAC
                                     </button>
-                                    <button onClick={() => ejecutarConsultaRapida("DROP TABLE logiflow_telemetry;")} className="text-[10px] font-mono bg-surface hover:bg-red-500/20 text-red-500/70 px-2 py-1 rounded border border-red-500/20 transition-colors">
+                                    <button 
+                                        onClick={() => ejecutarConsultaRapida("DROP TABLE logiflow_telemetry;")} 
+                                        disabled={!safeToClick || isQuerying}
+                                        className="text-[10px] font-mono bg-surface hover:bg-red-500/20 text-red-500/70 px-2 py-1 rounded border border-red-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
                                         💥 PROBAR WAF
                                     </button>
-                                    <button onClick={() => ejecutarConsultaRapida("SELECT * FROM tabla_fantasma;")} className="text-[10px] font-mono bg-surface hover:bg-orange-500/20 text-orange-400/70 px-2 py-1 rounded border border-orange-500/20 transition-colors">
+                                    <button 
+                                        onClick={() => ejecutarConsultaRapida("SELECT * FROM tabla_fantasma;")} 
+                                        disabled={!safeToClick || isQuerying}
+                                        className="text-[10px] font-mono bg-surface hover:bg-orange-500/20 text-orange-400/70 px-2 py-1 rounded border border-orange-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
                                         ⚠️ ERROR SINTAXIS
                                     </button>
                                 </div>
@@ -650,10 +671,8 @@ export default function LogiflowDashboard() {
                     {status === 'format_error' && (
                         <div className="flex flex-col justify-center items-center h-full flex-1 text-center">
                             <div className="bg-orange-500/10 text-orange-400 w-16 h-16 flex items-center justify-center rounded-full mb-4 border border-orange-500/20"><span className="text-2xl">⚠️</span></div>
-                            <h4 className="text-white font-bold text-xl mb-2">Proceso Abortado por Seguridad</h4>
-                            <p className="text-text text-sm mb-6 max-w-md">
-                                El motor backend ha detenido la carga silenciosamente. Esto ocurre cuando el archivo tiene un formato inválido o le faltan columnas obligatorias.
-                            </p>
+                            <h4 className="text-white font-bold text-xl mb-2">Proceso Abortado</h4>
+                            <p className="text-text text-sm mb-6 max-w-md">El motor ha detenido la carga. Esto ocurre cuando el archivo tiene un formato inválido, le faltan columnas o superó el límite de registros corruptos tolerados.</p>
                             <button onClick={resetDashboard} className="bg-orange-500/20 text-orange-400 font-mono text-sm px-6 py-2 rounded-lg border border-orange-500/30 hover:bg-orange-500/30 transition-colors">
                                 Revisar archivo e intentar de nuevo
                             </button>
