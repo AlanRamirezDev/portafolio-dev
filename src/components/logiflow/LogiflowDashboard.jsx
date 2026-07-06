@@ -137,19 +137,24 @@ export default function LogiflowDashboard() {
         setLogs([{ id: Date.now(), hora: new Date().toLocaleTimeString(), tipo: 'info', mensaje: 'Consola limpiada.' }]);
     };
 
-    const downloadMassiveCSV = () => {
+    const downloadMassiveCSV = (withErrors = false) => {
         let csvContent = "tripId,vehicleVin,driverId,timestampUtc,odometerKm,fuelConsumedL,vehicleStatus,routeCode\n";
         const statuses = ['ACTIVO', 'EN_REPARACION', 'INACTIVO'];
         const routes = ['RT-CDMX-QRO', 'RT-MTY-LDO', 'RT-GDL-MAN', 'RT-PUE-VER'];
         const EXACT_RECORDS = 50000;
+        
+        // Errores intencionales
+        const errorIndices = withErrors ? [10000, 20000, 30000, 40000, 49000] : [];
         
         for (let i = 1; i <= EXACT_RECORDS; i++) {
             const trip = `TRIP-${10000 + i}`;
             const vin = `1FM5K8GC7HZA${String(i).padStart(5, '0')}`;
             const driver = `DRV-${Math.floor(Math.random() * 900) + 100}`;
             const time = `2026-06-12T14:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}:00`;
-            const odo = (Math.random() * 100000).toFixed(1);
-            const fuel = (Math.random() * 50).toFixed(1);
+            
+            let odo = errorIndices.includes(i) ? "TEXTO_CORRUPTO" : (Math.random() * 100000).toFixed(1);
+            let fuel = (Math.random() * 50).toFixed(1);
+            
             const statusStr = statuses[Math.floor(Math.random() * statuses.length)];
             const route = routes[Math.floor(Math.random() * routes.length)];
             
@@ -160,7 +165,7 @@ export default function LogiflowDashboard() {
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
         link.setAttribute('href', url);
-        link.setAttribute('download', 'bitacora_flotilla_demo.csv');
+        link.setAttribute('download', withErrors ? 'bitacora_corrupta_demo.csv' : 'bitacora_flotilla_demo.csv');
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
@@ -269,6 +274,25 @@ export default function LogiflowDashboard() {
         return () => clearInterval(pollInterval);
     }, [status, totalRecords]);
 
+    useEffect(() => {
+        let recoveryInterval;
+        if (status === 'locked') {
+            recoveryInterval = setInterval(async () => {
+                try {
+                    const response = await logiflowApi.get('/status');
+                    if (!response.data.isRunning) {
+                        setStatus('idle');
+                        clearInterval(recoveryInterval);
+                    }
+                } catch (error) {
+                    setStatus('error');
+                    clearInterval(recoveryInterval);
+                }
+            }, 1000);
+        }
+        return () => clearInterval(recoveryInterval);
+    }, [status]);
+
     const handleUpload = async () => {
         if (!file || totalRecords === 0) {
             setFileError("El archivo está vacío o es inválido.");
@@ -294,8 +318,7 @@ export default function LogiflowDashboard() {
             }
         } catch (error) {
             if (error.response && error.response.status === 409) {
-                setFileError(error.response.data.error || "Proceso denegado por políticas de concurrencia.");
-                setStatus('idle');
+                setStatus('locked');
             } else {
                 setStatus('error');
             }
@@ -452,10 +475,13 @@ export default function LogiflowDashboard() {
                                         <button onClick={() => fileInputRef.current?.click()} className="bg-accent/10 text-accent font-mono text-sm px-6 py-2 rounded-lg border border-accent/20 hover:bg-accent/20 transition-colors">
                                             Cargar archivo
                                         </button>
-                                        <div className="mt-4 pt-4 border-t border-white/5 w-full">
-                                            <p className="text-text text-xs mb-3">¿Prefieres ver el máximo potencial directamente?</p>
-                                            <button onClick={downloadMassiveCSV} className="text-xs bg-white/5 text-white px-4 py-2 rounded hover:bg-white/10 transition-colors border border-white/10 shadow-sm">
-                                                Generar y descargar Bitácora de Prueba (50k registros)
+                                        <div className="mt-4 pt-4 border-t border-white/5 w-full flex flex-col gap-2">
+                                            <p className="text-text text-xs mb-1">¿No tienes archivo? Genera uno de prueba:</p>
+                                            <button onClick={() => downloadMassiveCSV(false)} className="text-xs bg-white/5 text-white px-4 py-2 rounded hover:bg-white/10 transition-colors border border-white/10 shadow-sm">
+                                                📄 Generar y descargar Bitácora de Prueba (50k registros)
+                                            </button>
+                                            <button onClick={() => downloadMassiveCSV(true)} className="text-xs bg-orange-500/10 text-orange-400 px-4 py-2 rounded hover:bg-orange-500/20 transition-colors border border-orange-500/20 shadow-sm">
+                                                ⚠️ Generar y descargar Bitácora Corrupta (50k registros con errores)
                                             </button>
                                         </div>
                                     </div>
@@ -488,6 +514,17 @@ export default function LogiflowDashboard() {
                                 <p className="text-xs text-zinc-400 max-w-md mx-auto leading-relaxed animate-pulse">
                                     ⏳ Nota: El backend utiliza una capa gratuita en la nube. Si es la primera carga o la base contiene demasiados registros previos, el servidor en la nube puede tardar hasta 60 segundos en arrancar y purgar los datos. Agradezco tu paciencia.
                                 </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {status === 'locked' && (
+                        <div className="flex flex-col justify-center items-center h-full min-h-[300px] gap-6 flex-1 text-center animate-in fade-in duration-300">
+                            <div className="w-16 h-16 border-4 border-white/10 border-t-yellow-500 rounded-full animate-spin"></div>
+                            <div className="text-center px-4">
+                                <h4 className="text-white font-bold text-xl mb-2">Motor Ocupado</h4>
+                                <p className="text-text text-sm mb-4 max-w-md">El servidor está terminando de procesar un lote previo en segundo plano.</p>
+                                <p className="text-yellow-500 font-mono text-xs animate-pulse">Monitoreando estado... Esta pantalla desaparecerá automáticamente.</p>
                             </div>
                         </div>
                     )}
