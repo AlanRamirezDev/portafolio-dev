@@ -1,9 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
-
-const API_BASE_URL = import.meta.env.PROD 
-  ? 'https://logiflow-api-fx7o.onrender.com'
-  : 'http://localhost:8081';
+import logiflowApi from '../../lib/logiflow/logiflowApi';
 
 // Minijuego Demo
 const SimuladorDespacho = () => {
@@ -178,17 +174,39 @@ export default function LogiflowDashboard() {
             return;
         }
 
-        try {
-            const text = await selectedFile.text();
-            const lines = text.split('\n').filter(line => line.trim().length > 0).length - 1;
-            setTotalRecords(lines > 0 ? lines : 0);
-            setFile(selectedFile);
-            setStatus('idle');
-            setProcessedRecords(0);
-        } catch (err) {
-            console.error("Error leyendo archivo local:", err);
-            setFileError('No se pudo leer el archivo. Intenta de nuevo.');
-        }
+        // Lectura por Chunks para evitar desbordamiento de RAM
+        let lineCount = 0;
+        let offset = 0;
+        const CHUNK_SIZE = 1024 * 512; // 512 KB por iteración
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+            const text = e.target.result;
+            for (let i = 0; i < text.length; i++) {
+                if (text[i] === '\n') lineCount++;
+            }
+            offset += CHUNK_SIZE;
+            if (offset < selectedFile.size) {
+                readNextChunk();
+            } else {
+                setTotalRecords(lineCount > 0 ? lineCount - 1 : 0);
+                setFile(selectedFile);
+                setStatus('idle');
+                setProcessedRecords(0);
+            }
+        };
+
+        reader.onerror = () => {
+            console.error("Error leyendo archivo local:", reader.error);
+            setFileError('Error crítico al procesar el archivo en memoria.');
+        };
+
+        const readNextChunk = () => {
+            const slice = selectedFile.slice(offset, offset + CHUNK_SIZE);
+            reader.readAsText(slice);
+        };
+        
+        readNextChunk();
     };
 
     const handleDrop = (e) => {
@@ -205,31 +223,34 @@ export default function LogiflowDashboard() {
 
     useEffect(() => {
         let pollInterval;
-        let lastCount = -1;
         let stagnantPings = 0;
 
         if (status === 'processing') {
             pollInterval = setInterval(async () => {
                 try {
-                    const response = await axios.get(`${API_BASE_URL}/api/v1/etl/status`);
+                    const response = await logiflowApi.get('/status');
                     const count = response.data.processedRecords;
                     const isRunning = response.data.isRunning;
                     
                     setProcessedRecords(count);
 
-                    if (count >= totalRecords && totalRecords > 0) {
-                        setStatus('success');
-                        clearInterval(pollInterval);
-                    } 
-                    else if (!isRunning) {
+                    if (!isRunning) {
                         stagnantPings++;
                         if (stagnantPings > 5) {
-                            setStatus('format_error');
+                            if (count > 0) {
+                                setStatus('success');
+                            } else {
+                                setStatus('format_error');
+                            }
                             clearInterval(pollInterval);
                         }
-                    } 
-                    else {
+                    } else {
                         stagnantPings = 0;
+
+                        if (count >= totalRecords && totalRecords > 0) {
+                            setStatus('success');
+                            clearInterval(pollInterval);
+                        }
                     }
                 } catch (error) {
                     console.error("Error crítico de red consultando el estado:", error);
@@ -255,9 +276,9 @@ export default function LogiflowDashboard() {
         formData.append('file', file);
 
         try {
-            await axios.delete(`${API_BASE_URL}/api/v1/etl/reset`);
+            await logiflowApi.delete('/reset');
             
-            const response = await axios.post(`${API_BASE_URL}/api/v1/etl/upload`, formData, {
+            const response = await logiflowApi.post('/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
@@ -294,7 +315,7 @@ export default function LogiflowDashboard() {
         addLog('info', '>_ SELECT * FROM logiflow_telemetry ORDER BY id DESC LIMIT 5;');
         
         try {
-            const response = await axios.get(`${API_BASE_URL}/api/v1/etl/preview`);
+            const response = await logiflowApi.get('/preview');
             const data = response.data;
             setPreviewData(data);
             
@@ -343,7 +364,7 @@ export default function LogiflowDashboard() {
         }
 
         try {
-            const response = await axios.post(`${API_BASE_URL}/api/v1/etl/query`, { query: queryText });
+            const response = await logiflowApi.post('/query', { query: queryText });
             const data = response.data;
             
             if (data.length === 0) {

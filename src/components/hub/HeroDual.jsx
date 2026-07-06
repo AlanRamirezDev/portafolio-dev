@@ -85,7 +85,7 @@ export default function HeroDual() {
                   <div className="pl-4">
                     <span className="text-blue-300">"stack"</span>: <span className="text-gray-400">[</span>
                     <div className="pl-4 text-yellow-300">
-                      "Java (Spring Boot 3)",<br/>
+                      "Java (Spring Boot)",<br/>
                       "PHP (Laravel)",<br/>
                       "JavaScript (Astro, React)",<br/>
                       "Tailwind CSS"

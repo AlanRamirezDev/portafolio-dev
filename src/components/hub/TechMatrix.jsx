@@ -5,7 +5,7 @@ const categorias = ['Todos', 'Backend', 'Frontend', 'Infra & Herramientas'];
 
 const tecnologias = [
   { nombre: 'Java', categoria: 'Backend' },
-  { nombre: 'Spring Boot 3', categoria: 'Backend' },
+  { nombre: 'Spring Boot', categoria: 'Backend' },
   { nombre: 'PHP', categoria: 'Backend' },
   { nombre: 'Laravel', categoria: 'Backend' },
   { nombre: 'Astro', categoria: 'Frontend' },

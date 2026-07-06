@@ -4,10 +4,11 @@
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![Laravel](https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)
+![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring_Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 
-¡Te doy la bienvenida a mi repositorio del portafolio personal!
+¡Te doy la bienvenida al repositorio de mi portafolio profesional!
 
 Este proyecto actúa como un HUB central interactivo diseñado bajo una arquitectura estática y modular para demostrar mis capacidades en ingeniería de software, patrones de diseño y despliegues fullstack integrando múltiples tecnologías.
 
@@ -72,4 +73,4 @@ Todos los comandos se ejecutan desde la raíz del proyecto utilizando `pnpm`:
 
 Soy Ingeniero en Informática Titulado (Cédula Profesional N° 13385449) egresado del IPN "UPIICSA". Como desarrollador de software, aplico una lógica técnica agnóstica; mi enfoque no se limita a un único stack o framework, sino a mantener una mentalidad de crecimiento continuo para seleccionar y dominar la mejor tecnología que resuelva el problema de negocio. 
 
-Cuento con experiencia sólida diseñando desde aplicaciones web de alto impacto bajo el patrón MVC con PHP (Laravel) y JavaScript, hasta la construcción de soluciones concurrentes, seguras y de alta disponibilidad utilizando Java (Spring Boot 3). Opero bajo una infraestructura ágil, transitando eficientemente el ciclo de vida del desarrollo entre entornos locales en Windows y despliegues en servidores Linux y contenedores Docker.
+Cuento con experiencia sólida diseñando desde aplicaciones web de alto impacto bajo el patrón MVC con PHP (Laravel) y JavaScript, hasta la construcción de soluciones concurrentes, seguras y de alta disponibilidad utilizando Java (Spring Boot). Opero bajo una infraestructura ágil, transitando eficientemente el ciclo de vida del desarrollo entre entornos locales en Windows y despliegues en servidores Linux y contenedores Docker.
