@@ -139,8 +139,6 @@ import reporteriaApi from '../../lib/reporteria/reporteriaApi';
             
             setDownloadCount(prev => prev + 1);
         } catch (err) {
-            console.error("Error capturado desde el backend:", err);
-            
             if (err.response?.status === 429) {
                 setError("Has excedido el límite de seguridad de red (10 peticiones/minuto). Por favor, espera un momento para proteger los recursos del servidor.");
             } else if (err.response?.status >= 500) {
@@ -349,7 +347,7 @@ import reporteriaApi from '../../lib/reporteria/reporteriaApi';
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
-                        {transactionsData.map((txn) => {
+                        {transactionsData.map((txn, index) => {
                                 const rawEst = txn.estado || '';
                                 const estNormalizado = rawEst.toLowerCase().trim();
                                 const isValid = ['aprobado', 'pendiente', 'rechazado'].includes(estNormalizado);
@@ -360,7 +358,7 @@ import reporteriaApi from '../../lib/reporteria/reporteriaApi';
                                 else if (estNormalizado === 'pendiente') badgeClass = 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20';
                                 else if (estNormalizado === 'rechazado') badgeClass = 'bg-red-500/10 text-red-400 border border-red-500/20';
                                 return (
-                                    <tr key={txn.id} className="hover:bg-white/5 transition-colors">
+                                    <tr key={`${txn.id}-${index}`} className="hover:bg-white/5 transition-colors">
                                         <td className="py-3 px-4 font-mono text-sm text-text whitespace-nowrap">{txn.id}</td>
                                         <td className="py-3 px-4 text-sm text-white">{txn.detalle}</td>
                                         <td className="py-3 px-4 font-mono text-sm text-text text-right">${txn.monto.toFixed(2)}</td>
