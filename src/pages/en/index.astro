@@ -21,18 +21,22 @@ const ordenProyectos = [
     'iam-dashboard'
 ];
 
-const proyectos = (await getCollection('proyectos')).sort((a, b) => {
-    const indexA = ordenProyectos.indexOf(a.id);
-    const indexB = ordenProyectos.indexOf(b.id);
+const todosLosProyectos = await getCollection('proyectos');
+const proyectos = todosLosProyectos
+    .filter((proyecto) => /^en[\/\\]/i.test(proyecto.id))
+    .sort((a, b) => {
+        const cleanA = a.id.replace(/^en[\/\\]/i, '');
+        const cleanB = b.id.replace(/^en[\/\\]/i, '');
+        
+        const indexA = ordenProyectos.indexOf(cleanA);
+        const indexB = ordenProyectos.indexOf(cleanB);
+        return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+    });
 
-    const pesoA = indexA === -1 ? 999 : indexA;
-    const pesoB = indexB === -1 ? 999 : indexB;
-
-    return pesoA - pesoB;
-});
-
-// Helper de idioma
-const getProjectUrl = (id) => lang === 'es' ? `/proyectos/${id}` : `/en/proyectos/${id}`;
+const getProjectUrl = (id) => {
+    const cleanId = id.replace(/^en[\/\\]/i, '');
+    return `/en/proyectos/${cleanId}`;
+};
 ---
 
 <Layout>

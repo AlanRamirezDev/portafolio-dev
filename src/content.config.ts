@@ -8,7 +8,7 @@ const proyectosCollection = defineCollection({
     description: z.string(),
     tech: z.array(z.string()),
     githubUrl: z.string().url().optional(),
-    status: z.enum(['Completado', 'En desarrollo']),
+    status: z.enum(['Completado', 'En desarrollo', 'Completed', 'In development']),
   }),
 });
 

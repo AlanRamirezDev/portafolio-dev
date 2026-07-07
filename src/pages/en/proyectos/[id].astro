@@ -1,38 +1,42 @@
 ---
-import Layout from '../../layouts/Layout.astro';
+import Layout from '../../../layouts/Layout.astro';
 import { getCollection, render } from 'astro:content';
 
 // Función para saber cuántas páginas generar (una por cada archivo .md)
 export async function getStaticPaths() {
   const proyectos = await getCollection('proyectos', ({ id }) => {
-    return !id.startsWith('en/'); // Ignora los archivos de la carpeta en/
+    return id.startsWith('en/');
   });
   
-  return proyectos.map(proyecto => ({
-    params: { id: proyecto.id },
-    props: { proyecto },
-  }));
+  return proyectos.map(proyecto => {
+    // Removemos 'en/' del ID para generar una URL limpia
+    const cleanId = proyecto.id.replace('en/', '');
+    return {
+      params: { id: cleanId },
+      props: { proyecto, cleanId },
+    };
+  });
 }
 
 // Obtenemos los datos del proyecto actual
-const { proyecto } = Astro.props;
+const { proyecto, cleanId } = Astro.props;
 const { Content } = await render(proyecto);
 
-// Diccionario de configuración para botones de demostración
+// Diccionario de configuración traducido apuntando a las futuras rutas en inglés
 const CONFIG_DEMOS = {
-  'motor-inversiones': { url: '/transaccional', texto: 'Probar Motor en Vivo', icono: '🚀' },
-  'iam-dashboard': { url: '/iam', texto: 'Probar Panel IAM en Vivo', icono: '🛡️' },
-  'logiflow-etl': { url: '/logiflow', texto: 'Probar Pipeline ETL en Vivo', icono: '⚡' },
-  'api-reporteria': { url: '/reporteria', texto: 'Probar Generador en Vivo', icono: '📄' }
+  'motor-inversiones': { url: '/en/transaccional', texto: 'Test Engine Live', icono: '🚀' },
+  'iam-dashboard': { url: '/en/iam', texto: 'Test IAM Dashboard Live', icono: '🛡️' },
+  'logiflow-etl': { url: '/en/logiflow', texto: 'Test ETL Pipeline Live', icono: '⚡' },
+  'api-reporteria': { url: '/en/reporteria', texto: 'Test Generator Live', icono: '📄' }
 };
 
-const demo = CONFIG_DEMOS[proyecto.id];
+const demo = CONFIG_DEMOS[cleanId];
 ---
 
-<Layout title={`${proyecto.data.title} | Portafolio Backend`}>
+<Layout title={`${proyecto.data.title} | Backend Portfolio`}>
   <main class="max-w-4xl mx-auto p-8 mt-4">
-    <a href="/" class="text-accent hover:text-accent/80 mb-8 inline-flex items-center gap-2 font-mono text-sm transition-colors">
-      <span>&lt;-</span> Volver al sistema principal
+    <a href="/en/" class="text-accent hover:text-accent/80 mb-8 inline-flex items-center gap-2 font-mono text-sm transition-colors">
+      <span>&lt;-</span> Back to main system
     </a>
 
     <header class="mb-12 border-b border-white/10 pb-8">
