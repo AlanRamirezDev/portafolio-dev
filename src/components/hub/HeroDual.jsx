@@ -1,15 +1,53 @@
 import { useState } from 'react';
+import { ui } from '../../i18n/ui';
 
-export default function HeroDual() {
+export default function HeroDual({ lang = 'es' }) {
   const [isDevMode, setIsDevMode] = useState(false);
+
+  // Helper local de traducción
+  const t = (key) => ui[lang][key] || ui['es'][key];
+
+  const toggleLanguage = () => {
+    if (lang === 'es') {
+      window.location.href = '/en/';
+    } else {
+      window.location.href = '/';
+    }
+  };
 
   return (
     <div className="w-full max-w-4xl mx-auto pt-12 pb-2 px-6 flex flex-col gap-6">
 
-      <div className="flex justify-end w-full">
+      <div className="flex flex-col sm:flex-row justify-between items-center w-full gap-4">
+        
+        {/* SWITCH DE IDIOMA */}
+        <div className="flex items-center gap-3 bg-surface border border-white/10 px-4 py-2 rounded-full shadow-md">
+          <span className={`text-sm font-mono transition-colors duration-300 ${lang === 'es' ? 'text-white font-bold' : 'text-gray-500'}`}>
+            ES
+          </span>
+          
+          <button
+            role="switch"
+            aria-checked={lang === 'en'}
+            aria-label="Alternar idioma entre Español e Inglés"
+            onClick={toggleLanguage}
+            className="relative inline-flex h-6 w-12 items-center rounded-full bg-white/10 border border-white/20 transition-colors focus:outline-none focus:ring-2 focus:ring-accent/50 cursor-pointer"
+            title="Change language / Cambiar idioma"
+          >
+            <span 
+              className={`inline-block h-4 w-4 transform rounded-full bg-accent transition-transform duration-300 ease-in-out ${lang === 'en' ? 'translate-x-7' : 'translate-x-1'}`} 
+            />
+          </button>
+          
+          <span className={`text-sm font-mono transition-colors duration-300 ${lang === 'en' ? 'text-white font-bold' : 'text-gray-500'}`}>
+            EN
+          </span>
+        </div>
+
+        {/* SWITCH DE MODO VISTA */}
         <div className="flex items-center gap-3 bg-surface border border-white/10 px-4 py-2 rounded-full shadow-md">
           <span className={`text-sm font-mono transition-colors duration-300 ${!isDevMode ? 'text-white font-bold' : 'text-gray-500'}`}>
-            Perfil
+            {t('hero.profile')}
           </span>
           
           <button
@@ -26,7 +64,7 @@ export default function HeroDual() {
           </button>
           
           <span className={`text-sm font-mono transition-colors duration-300 ${isDevMode ? 'text-accent font-bold' : 'text-gray-500'}`}>
-            Terminal
+            {t('hero.terminal')}
           </span>
         </div>
       </div>
@@ -38,16 +76,16 @@ export default function HeroDual() {
           // === MODO PERFIL ===
           <div className="animate-fade-in flex flex-col items-start text-left">
             <div className="inline-block px-3 py-1 bg-surface border border-white/10 rounded-md text-xs font-mono text-gray-400 mb-4 shadow-sm">
-              Perfil Profesional
+              {t('hero.profileBadge')}
             </div>
             <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tight leading-none mb-8">
-              ¡Hola! Soy <span className="text-accent drop-shadow-[0_0_15px_rgba(99,102,241,0.3)]">Alan Ramírez</span>
+              {t('hero.greeting')} <span className="text-accent drop-shadow-[0_0_15px_rgba(99,102,241,0.3)]">Alan Ramírez</span>
             </h1>
             <h2 className="text-xl md:text-2xl text-gray-300 font-medium mb-4">
-              Ingeniero en Informática <span className="text-accent/60">|</span> Full Stack Developer
+              {t('hero.role')}
             </h2>
             <p className="text-lg md:text-xl text-gray-400 leading-relaxed max-w-2xl mb-2">
-              Especializado en arquitecturas de escalables de alto rendimiento. Traduzco lógica de negocio compleja en plataformas resilientes, priorizando la concurrencia segura, el código limpio y la tolerancia a fallos desde el desarrollo local hasta el despliegue en producción, incluyendo pruebas de calidad.
+              {t('hero.description')}
             </p>
           </div>
         ) : (
@@ -77,7 +115,7 @@ export default function HeroDual() {
                     <span className="text-blue-300">"name"</span>: <span className="text-yellow-300">"Alan Michel Ramírez Juárez"</span>,
                   </div>
                   <div className="pl-4">
-                    <span className="text-blue-300">"role"</span>: <span className="text-yellow-300">"Ingeniero en Informática | Full Stack Developer"</span>,
+                    <span className="text-blue-300">"role"</span>: <span className="text-yellow-300">"{t('hero.role')}"</span>,
                   </div>
                   <div className="pl-4">
                     <span className="text-blue-300">"focus"</span>: <span className="text-yellow-300">"Clean Code & Scalable Architectures"</span>,
