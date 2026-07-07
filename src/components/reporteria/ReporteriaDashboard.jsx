@@ -139,11 +139,17 @@ import reporteriaApi from '../../lib/reporteria/reporteriaApi';
             
             setDownloadCount(prev => prev + 1);
         } catch (err) {
+            console.error("Error capturado desde el backend:", err);
+            
             if (err.response?.status === 429) {
                 setError("Has excedido el límite de seguridad de red (10 peticiones/minuto). Por favor, espera un momento para proteger los recursos del servidor.");
-            } else {
+            } else if (err.response?.status >= 500) {
+                setError("Error interno del servidor.");
+            } else if (!err.response) {
                 setServerStatus('offline');
-                setError("El servidor entró en suspensión por inactividad. Por favor, haz clic en 'Encender Servidor' para reactivarlo.");
+                setError("El servidor entró en suspensión por inactividad o no hay conexión de red. Por favor, haz clic en 'Encender Servidor' para reactivarlo.");
+            } else {
+                setError("Ocurrió un error inesperado al procesar el documento.");
             }
         } finally {
             setIsGenerating(false);
@@ -158,7 +164,7 @@ import reporteriaApi from '../../lib/reporteria/reporteriaApi';
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center space-y-4 bg-surface rounded-xl border border-white/5 shadow-2xl mt-4">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
-                <div className="space-y-2">
+                <div className="space-y-2 animate-pulse">
                     <h3 className="text-xl font-semibold text-white">Encendiendo el servidor...</h3>
                     <p className="text-xs text-text/50 max-w-md mx-auto leading-relaxed">
                         ⏳ Nota: El backend utiliza una capa gratuita en la nube. Si es la primera carga tras un periodo de inactividad, el servidor puede tardar hasta 60 segundos en iniciar. Agradezco tu paciencia.
