@@ -1,28 +1,28 @@
 ---
-import '../../styles/global.css';
-import UserManagement from '../../components/iam/UserManagement.jsx';
-import { getLangFromUrl } from '../../i18n/utils';
+import '../../../styles/global.css';
+import AuditLogsTable from '../../../components/iam/AuditLogsTable.jsx';
+import { getLangFromUrl } from '../../../i18n/utils';
 
 const lang = getLangFromUrl(Astro.url);
 
 const ui = {
     es: {
-        titleTag: "Usuarios - IAM Dashboard",
+        titleTag: "Dashboard - IAM Bitácora",
         navLog: "Bitácora",
         navUsers: "Gestión de Usuarios",
         navLogout: "Cerrar Sesión",
-        headerTitle: "Control de Accesos",
-        headerDesc: "Asignación de roles y privilegios (RBAC).",
+        headerTitle: "Panel de Auditoría",
+        headerDesc: "Bitácora de eventos de seguridad capturados en tiempo real.",
         linkDashboard: "/iam/dashboard",
         linkUsers: "/iam/users"
     },
     en: {
-        titleTag: "Users - IAM Dashboard",
+        titleTag: "Dashboard - IAM Audit Log",
         navLog: "Audit Log",
         navUsers: "User Management",
         navLogout: "Sign Out",
-        headerTitle: "Access Control",
-        headerDesc: "Role and privilege assignment (RBAC).",
+        headerTitle: "Audit Panel",
+        headerDesc: "Security event log captured in real time.",
         linkDashboard: "/en/iam/dashboard",
         linkUsers: "/en/iam/users"
     }
@@ -45,8 +45,8 @@ const t = ui[lang] || ui['es'];
                 <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-8 w-full sm:w-auto">
                     <h1 class="text-xl font-bold text-white tracking-tight text-center sm:text-left w-full sm:w-auto">IAM</h1>
                     <div class="flex justify-center gap-4 w-full sm:w-auto">
-                        <a href={t.linkDashboard} id="nav-dashboard-link" class="text-sm font-medium text-text hover:text-white transition-colors">{t.navLog}</a>
-                        <a href={t.linkUsers} id="nav-users-link" class="text-sm font-medium text-accent border-b border-accent pb-1">{t.navUsers}</a>
+                        <a href={t.linkDashboard} id="nav-dashboard-link" class="text-sm font-medium text-accent border-b border-accent pb-1">{t.navLog}</a>
+                        <a href={t.linkUsers} id="nav-users-link" class="text-sm font-medium text-text hover:text-white transition-colors">{t.navUsers}</a>
                     </div>
                 </div>
                 <button 
@@ -64,43 +64,40 @@ const t = ui[lang] || ui['es'];
                 <p class="text-sm text-text mt-1">{t.headerDesc}</p>
             </header>
 
-            <UserManagement client:only="react" lang={lang} />
+            <AuditLogsTable client:only="react" lang={lang} />
         </main>
 
         <script>
-            import iamApi from "../../lib/iam/iamApi";
+            import iamApi from "../../../lib/iam/iamApi";
 
             const isEnglish = window.location.pathname.startsWith('/en');
             const loginUrl = isEnglish ? '/en/iam' : '/iam';
 
-            // Expulsa al usuario antes de que intente interactuar con el DOM si no hay sesión
             if (!localStorage.getItem('jwt_token')) {
                 window.location.replace(loginUrl);
             }
 
-            // Listener global del estado
-            window.addEventListener('iam-user-creation', (e) => {
+            window.addEventListener('iam-simulation', (e) => {
                 const event = e as CustomEvent;
-                const isCreating = event.detail?.active;
+                const isSimulating = event.detail?.active;
                 
                 const logoutBtn = document.getElementById('logout-btn') as HTMLButtonElement;
-                const dashboardLink = document.getElementById('nav-dashboard-link');
                 const usersLink = document.getElementById('nav-users-link');
+                const dashboardLink = document.getElementById('nav-dashboard-link');
 
-                if (isCreating) {
+                if (isSimulating) {
                     if (logoutBtn) logoutBtn.disabled = true;
                     logoutBtn?.classList.add('opacity-50', 'pointer-events-none');
-                    dashboardLink?.classList.add('opacity-50', 'pointer-events-none');
                     usersLink?.classList.add('opacity-50', 'pointer-events-none');
+                    dashboardLink?.classList.add('opacity-50', 'pointer-events-none');
                 } else {
                     if (logoutBtn) logoutBtn.disabled = false;
                     logoutBtn?.classList.remove('opacity-50', 'pointer-events-none');
-                    dashboardLink?.classList.remove('opacity-50', 'pointer-events-none');
                     usersLink?.classList.remove('opacity-50', 'pointer-events-none');
+                    dashboardLink?.classList.remove('opacity-50', 'pointer-events-none');
                 }
             });
 
-            // Manejo de cierre de sesión
             document.getElementById('logout-btn')?.addEventListener('click', async () => {
                 const btn = document.getElementById('logout-btn');
                 if (btn) {
