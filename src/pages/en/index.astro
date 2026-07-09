@@ -1,10 +1,10 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
-import HeroDual from '../components/hub/HeroDual.jsx';
-import TechMatrix from '../components/hub/TechMatrix.jsx';
-import ExperienceTimeline from '../components/hub/ExperienceTimeline.jsx';
-import { getLangFromUrl } from '../i18n/utils';
+import HeroDual from '../../components/hub/HeroDual.jsx';
+import TechMatrix from '../../components/hub/TechMatrix.jsx';
+import ExperienceTimeline from '../../components/hub/ExperienceTimeline.jsx';
+import { getLangFromUrl } from '../../i18n/utils';
 
 const lang = getLangFromUrl(Astro.url);
 
@@ -23,14 +23,20 @@ const ordenProyectos = [
 
 const todosLosProyectos = await getCollection('proyectos');
 const proyectos = todosLosProyectos
-    .filter((proyecto) => !/^en[\/\\]/i.test(proyecto.id))
+    .filter((proyecto) => /^en[\/\\]/i.test(proyecto.id))
     .sort((a, b) => {
-        const indexA = ordenProyectos.indexOf(a.id);
-        const indexB = ordenProyectos.indexOf(b.id);
+        const cleanA = a.id.replace(/^en[\/\\]/i, '');
+        const cleanB = b.id.replace(/^en[\/\\]/i, '');
+        
+        const indexA = ordenProyectos.indexOf(cleanA);
+        const indexB = ordenProyectos.indexOf(cleanB);
         return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
     });
 
-const getProjectUrl = (id) => `/proyectos/${id}`;
+const getProjectUrl = (id) => {
+    const cleanId = id.replace(/^en[\/\\]/i, '');
+    return `/en/proyectos/${cleanId}`;
+};
 ---
 
 <Layout>

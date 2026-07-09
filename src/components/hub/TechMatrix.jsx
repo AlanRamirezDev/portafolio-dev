@@ -1,7 +1,20 @@
 import { useState } from 'react';
 
-// Se extraen las constantes estáticas fuera del componente para optimizar la memoria
-const categorias = ['Todos', 'Backend', 'Frontend', 'Infra & Herramientas'];
+// Las categorías internas se mapean con identificadores fijos para que la lógica de filtrado sea agnóstica al idioma
+const categoriasPorIdioma = {
+  es: [
+    { id: 'Todos', label: 'Todos' },
+    { id: 'Backend', label: 'Backend' },
+    { id: 'Frontend', label: 'Frontend' },
+    { id: 'Infra & Herramientas', label: 'Infra & Herramientas' }
+  ],
+  en: [
+    { id: 'Todos', label: 'All' },
+    { id: 'Backend', label: 'Backend' },
+    { id: 'Frontend', label: 'Frontend' },
+    { id: 'Infra & Herramientas', label: 'Infra & Tools' }
+  ]
+};
 
 const tecnologias = [
   { nombre: 'Java', categoria: 'Backend' },
@@ -21,15 +34,14 @@ const tecnologias = [
   { nombre: 'Git', categoria: 'Infra & Herramientas' },
 ];
 
-export default function TechMatrix() {
+export default function TechMatrix({ lang = 'es' }) {
   const [filtroActivo, setFiltroActivo] = useState('Todos');
   const [isAnimating, setIsAnimating] = useState(false);
 
-  // Función para coordinar el estado del filtro y la animación temporal
-  const manejarFiltro = (categoria) => {
-    if (categoria === filtroActivo) return;
+  const manejarFiltro = (categoriaId) => {
+    if (categoriaId === filtroActivo) return;
     
-    setFiltroActivo(categoria);
+    setFiltroActivo(categoriaId);
     setIsAnimating(true);
     
     setTimeout(() => {
@@ -37,26 +49,28 @@ export default function TechMatrix() {
     }, 300);
   };
 
+  const listaCategorias = categoriasPorIdioma[lang] || categoriasPorIdioma['es'];
+
   return (
     <section className="py-8">
       <h2 className="text-2xl font-semibold mb-8 border-b border-white/10 pb-4 text-white flex items-center gap-2">
-        <span className="text-accent font-mono text-lg">01.</span> Stack Tecnológico
+        <span className="text-accent font-mono text-lg">01.</span> {lang === 'es' ? 'Stack Tecnológico' : 'Tech Stack'}
       </h2>
 
       {/* Botones de Filtro */}
-      <div className="flex flex-wrap gap-3 mb-8" role="group" aria-label="Filtros de tecnologías">
-        {categorias.map((categoria) => (
+      <div className="flex flex-wrap gap-3 mb-8" role="group" aria-label={lang === 'es' ? 'Filtros de tecnologías' : 'Technology filters'}>
+        {listaCategorias.map((cat) => (
           <button
-            key={categoria}
-            onClick={() => manejarFiltro(categoria)}
-            aria-pressed={filtroActivo === categoria}
+            key={cat.id}
+            onClick={() => manejarFiltro(cat.id)}
+            aria-pressed={filtroActivo === cat.id}
             className={`px-4 py-2 rounded-full font-mono text-sm transition-all duration-300 border focus:outline-none focus:ring-2 focus:ring-accent/50 cursor-pointer ${
-              filtroActivo === categoria
+              filtroActivo === cat.id
                 ? 'bg-accent/10 border-accent text-accent shadow-[0_0_15px_rgba(99,102,241,0.2)]'
                 : 'bg-surface border-white/10 text-gray-400 hover:border-accent hover:text-accent hover:scale-110'
             }`}
           >
-            {categoria}
+            {cat.label}
           </button>
         ))}
       </div>

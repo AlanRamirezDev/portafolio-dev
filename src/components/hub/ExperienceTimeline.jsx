@@ -1,65 +1,132 @@
 import { useState } from 'react';
 
-// El arreglo se declara fuera del componente para optimizar la memoria
-const logros = [
-  {
-    id: 'logro-3',
-    hash: 'a3d4e12',
-    titulo: 'Full Stack & DevOps Developer',
-    entidad: 'Centro Federal de Conciliación y Registro Laboral',
-    periodo: 'Feb 2023 - Actual',
-    descripcionCorta: 'Modernización de la interfaz de Conciliación Colectiva y desarrollo de lógicas de negocio bajo el patrón MVC.',
-    detalles: [
-      'Optimización y refactorización de consultas complejas en PostgreSQL y MySQL, logrando una reducción comprobada del 62% en los tiempos de respuesta.',
-      'Desarrollo de nuevas funcionalidades integrando APIs RESTful con PHP (Laravel) y JavaScript (ES6+), garantizando escalabilidad.',
-      "Documentación de procedimientos y validación del roles para el acceso a distintos módulos del sistema (RBAC).",
-      'Implementación de flujos de automatización (CI/CD) para QA y Producción.',
-    ],
-    tags: ['PHP', 'Laravel', 'Docker', 'CI/CD', 'PostgreSQL']
-  },
-  {
-    id: 'logro-2',
-    hash: 'e5f6g78',
-    titulo: 'Ingeniero de Infraestructura y Soporte Técnico',
-    entidad: 'DTEP RAM S.A. DE C.V.',
-    periodo: 'Abr 2021 - Ene 2023',
-    descripcionCorta: 'Aseguramiento de la continuidad operativa, administración de servidores y automatización de procesos operativos.',
-    detalles: [
-      'Automatización de tareas administrativas y operativas mediante la creación de scripts en Bash y PowerShell, mejorando la eficiencia del equipo.',
-      'Mantenimiento de la integridad referencial en esquemas relacionales (MySQL) mediante ejecución continua de consultas SQL.',
-      'Configuración de túneles VPN y arreglos RAID en la infraestructura tecnológica para garantizar la redundancia de datos.',
-      'Diagnóstico e instalación de configuraciones en servidores web.'
-    ],
-    tags: ['Bash', 'PowerShell', 'MySQL', 'VPN/RAID', 'Linux/Windows']
-  },
-  {
-    id: 'logro-1',
-    hash: 'b1c2d34',
-    titulo: 'Ingeniero en Informática (Titulado)',
-    entidad: 'Instituo Politécnico Nacional "IPN UPIICSA"',
-    periodo: 'Concluido',
-    descripcionCorta: 'Formación profesional integral con enfoque en lógica de programación, algoritmos eficientes y diseño arquitectónico.',
-    detalles: [
-      'Cédula Profesional N° 13385449.',
-      'Cursos y Certificaciones: Programación con Java (Servicio público), Google AI y Data Analytics (Google/Coursera).',
-      'Idiomas: Español (Nativo), Inglés B2 (CEFR) (Intermedio-Avanzado).',
-      'Dominio de fundamentos de ingeniería: diseño de modelos entidad-relación, normalización y aplicación de patrones de diseño.'
-    ],
-    tags: ['Ingeniería de Software', 'Java', 'SQL', 'Arquitectura']
-  }
-];
+// El objeto se declara fuera del componente indexado por idioma para optimizar la memoria
+const diccionarioLogros = {
+  es: [
+    {
+      id: 'logro-3',
+      hash: 'a3d4e12',
+      titulo: 'Full Stack & DevOps Developer',
+      entidad: 'Centro Federal de Conciliación y Registro Laboral',
+      periodo: 'Feb 2023 - Actual',
+      descripcionCorta: 'Modernización de la interfaz de Conciliación Colectiva y desarrollo de lógicas de negocio bajo el patrón MVC.',
+      detalles: [
+        'Optimización y refactorización de consultas complejas en PostgreSQL y MySQL, logrando una reducción comprobada del 62% en los tiempos de respuesta.',
+        'Desarrollo de nuevas funcionalidades integrando APIs RESTful con PHP (Laravel) y JavaScript (ES6+), garantizando escalabilidad.',
+        'Documentación de procedimientos y validación de roles para el acceso a distintos módulos del sistema (RBAC).',
+        'Implementación de flujos de automatización (CI/CD) para QA y Producción.',
+      ],
+      tags: ['PHP', 'Laravel', 'Docker', 'CI/CD', 'PostgreSQL']
+    },
+    {
+      id: 'logro-2',
+      hash: 'e5f6g78',
+      titulo: 'Ingeniero de Infraestructura y Soporte Técnico',
+      entidad: 'DTEP RAM S.A. DE C.V.',
+      periodo: 'Abr 2021 - Ene 2023',
+      descripcionCorta: 'Aseguramiento de la continuidad operativa, administración de servidores y automatización de procesos operativos.',
+      detalles: [
+        'Automatización de tareas administrativas y operativas mediante la creación de scripts en Bash y PowerShell, mejorando la eficiencia del equipo.',
+        'Mantenimiento de la integridad referencial en esquemas relacionales (MySQL) mediante ejecución continua de consultas SQL.',
+        'Configuración de túneles VPN y arreglos RAID en la infraestructura tecnológica para garantizar la redundancia de datos.',
+        'Diagnóstico e instalación de configuraciones en servidores web.'
+      ],
+      tags: ['Bash', 'PowerShell', 'MySQL', 'VPN/RAID', 'Linux/Windows']
+    },
+    {
+      id: 'logro-1',
+      hash: 'b1c2d34',
+      titulo: 'Ingeniero en Informática (Titulado)',
+      entidad: 'Instituto Politécnico Nacional "IPN UPIICSA"',
+      periodo: 'Concluido',
+      descripcionCorta: 'Formación profesional integral con enfoque en lógica de programación, algoritmos eficientes y diseño arquitectónico.',
+      detalles: [
+        'Cédula Profesional N° 13385449.',
+        'Cursos y Certificaciones: Programación con Java (Servicio público), Google AI y Data Analytics (Google/Coursera).',
+        'Idiomas: Español (Nativo), Inglés B2 (CEFR) (Intermedio-Avanzado).',
+        'Dominio de fundamentos de ingeniería: diseño de modelos entidad-relación, normalización y aplicación de patrones de diseño.'
+      ],
+      tags: ['Ingeniería de Software', 'Java', 'SQL', 'Arquitectura']
+    }
+  ],
+  en: [
+    {
+      id: 'logro-3',
+      hash: 'a3d4e12',
+      titulo: 'Full Stack & DevOps Developer',
+      entidad: 'Centro Federal de Conciliación y Registro Laboral',
+      periodo: 'Feb 2023 - Present',
+      descripcionCorta: 'Modernization of the Conciliación Colectiva interface and development of business logic under the MVC pattern.',
+      detalles: [
+        'Optimization and refactoring of complex queries in PostgreSQL and MySQL, achieving a proven 62% reduction in response times.',
+        'Development of new features integrating RESTful APIs with PHP (Laravel) and JavaScript (ES6+), ensuring scalability.',
+        'Documentation of procedures and role validation for access to different system modules (RBAC).',
+        'Implementation of automation workflows (CI/CD) for QA and Production.',
+      ],
+      tags: ['PHP', 'Laravel', 'Docker', 'CI/CD', 'PostgreSQL']
+    },
+    {
+      id: 'logro-2',
+      hash: 'e5f6g78',
+      titulo: 'Infrastructure & Technical Support Engineer',
+      entidad: 'DTEP RAM S.A. DE C.V.',
+      periodo: 'Apr 2021 - Jan 2023',
+      descripcionCorta: 'Ensuring operational continuity, server administration, and automation of operational processes.',
+      detalles: [
+        'Automation of administrative and operational tasks by creating Bash and PowerShell scripts, improving team efficiency.',
+        'Maintenance of referential integrity in relational schemas (MySQL) through continuous execution of SQL queries.',
+        'Configuration of VPN tunnels and RAID arrays in the technological infrastructure to ensure data redundancy.',
+        'Diagnosis and installation of web server configurations.'
+      ],
+      tags: ['Bash', 'PowerShell', 'MySQL', 'VPN/RAID', 'Linux/Windows']
+    },
+    {
+      id: 'logro-1',
+      hash: 'b1c2d34',
+      titulo: 'Computer Engineer (Graduated)',
+      entidad: 'Instituto Politécnico Nacional "IPN UPIICSA"',
+      periodo: 'Completed',
+      descripcionCorta: 'Comprehensive professional training with a focus on programming logic, efficient algorithms, and architectural design.',
+      detalles: [
+        'Professional License No. 13385449.',
+        'Courses and Certifications: Java Programming (Public service), Google AI, and Data Analytics (Google/Coursera).',
+        'Languages: Spanish (Native), English B2 (CEFR) (Upper-Intermediate).',
+        'Mastery of engineering fundamentals: entity-relationship model design, normalization, and application of design patterns.'
+      ],
+      tags: ['Software Engineering', 'Java', 'SQL', 'Architecture']
+    }
+  ]
+};
 
-export default function ExperienceTimeline() {
+const textosEstaticos = {
+  es: {
+    seccion: '03.',
+    titulo: 'Historial de Logros & Experiencia',
+    ayuda: 'Haga clic para expandir detalles del commit',
+    impacto: 'Impacto Técnico e Implementaciones:'
+  },
+  en: {
+    seccion: '03.',
+    titulo: 'History of Achievements & Experience',
+    ayuda: 'Click to expand commit details',
+    impacto: 'Technical Impact & Implementations:'
+  }
+};
+
+export default function ExperienceTimeline({ lang = 'es' }) {
   const [nodoExpandido, setNodoExpandido] = useState(null);
 
   const toggleNodo = (id) => {
     setNodoExpandido(nodoExpandido === id ? null : id);
   };
 
+  const logros = diccionarioLogros[lang] || diccionarioLogros['es'];
+  const txt = textosEstaticos[lang] || textosEstaticos['es'];
+
   return (
     <section className="py-12">
       <h2 className="text-2xl font-semibold mb-12 border-b border-white/10 pb-4 text-white flex items-center gap-2">
-        <span className="text-accent font-mono text-lg">03.</span> Historial de Logros & Experiencia
+        <span className="text-accent font-mono text-lg">{txt.seccion}</span> {txt.titulo}
       </h2>
 
       <div className="relative border-l-2 border-white/10 ml-4 md:ml-6 pl-6 md:pl-8 space-y-12">
@@ -71,13 +138,13 @@ export default function ExperienceTimeline() {
               <button
                 onClick={() => toggleNodo(logro.id)}
                 aria-expanded={isOpen}
-                aria-label={`Ver más detalles sobre ${logro.titulo} en ${logro.entidad}`}
+                aria-label={lang === 'es' ? `Ver más detalles sobre ${logro.titulo}` : `View more details about ${logro.titulo}`}
                 className={`absolute -left-[31px] md:-left-[39px] top-1.5 w-4 h-4 rounded-full border-2 transition-all duration-300 focus:outline-none cursor-pointer ${
                   isOpen 
                     ? 'bg-accent border-accent scale-125 shadow-[0_0_10px_rgba(99,102,241,0.5)]' 
                     : 'bg-background border-white/30 group-hover:border-accent group-hover:scale-110 focus:border-accent'
                 }`}
-                title="Haga clic para expandir detalles del commit"
+                title={txt.ayuda}
               />
 
               <div 
@@ -91,7 +158,6 @@ export default function ExperienceTimeline() {
                 role="button"
                 tabIndex={0}
                 aria-expanded={isOpen}
-                aria-label={`Tarjeta de experiencia: ${logro.titulo} en ${logro.entidad}`}
                 className={`bg-surface p-6 rounded-2xl border transition-all duration-300 cursor-pointer select-none focus:outline-none focus:border-accent/40 group-hover:scale-105 origin-left group-hover:shadow-[0_0_30px_rgba(99,102,241,0.3)] ${
                   isOpen ? 'border-accent/40 bg-surface/90 shadow-lg' : 'border-white/5 group-hover:border-accent/50'
                 }`}
@@ -121,7 +187,7 @@ export default function ExperienceTimeline() {
                 }`}>
                   <div className="overflow-hidden">
                     <h5 className="text-xs font-mono uppercase tracking-wider text-accent mb-3 font-bold">
-                      Impacto Técnico e Implementaciones:
+                      {txt.impacto}
                     </h5>
                     <ul className="space-y-2.5 text-gray-400 text-sm list-inside list-disc pl-1">
                       {logro.detalles.map((detalle, idx) => (

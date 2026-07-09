@@ -18,7 +18,69 @@ const getActionBadgeStyle = (action) => {
     }
 };
 
-export default function AuditLogsTable() {
+// Diccionario
+const ui = {
+    es: {
+        errFetch: 'No se pudieron cargar los logs de auditoría.',
+        loadingTitle: 'Consultando bitácora...',
+        loadingNote: '⏳ Nota: El backend utiliza una capa gratuita en la nube. Si es la primera carga tras un periodo de inactividad, el servidor puede tardar hasta 60 segundos en iniciar. Agradezco tu paciencia.',
+        restrictedTitle: 'Sección Restringida',
+        restrictedDesc: 'Acceso denegado. Tu rol en el sistema no tiene privilegios para visualizar la bitácora de auditoría.',
+        demoTitle: 'Modo Demostración',
+        demoDesc: 'En un entorno de producción real, esta bitácora debe ser estricta e inmutable. El sistema cuenta con 5 registros históricos pre-cargados (inalterables) para demostrar los estados de la interfaz. Tu actividad real ya se está registrando bajo un estricto protocolo de anonimización en la IP. Al usar la función de',
+        demoSimulateText: 'Simular Tráfico',
+        demoDescEnd: ', el sistema inyectará eventos aleatorios con direcciones IP ficticias visibles para fines didácticos.',
+        simInjecting: 'Inyectando...',
+        simBtn: 'Simular Tráfico',
+        feedbackSuccess: '✅ 3 eventos aleatorios inyectados',
+        feedbackError: '❌ Error de inyección',
+        searchPlaceholder: 'Buscador',
+        showing: 'Mostrando:',
+        records: 'registro(s)',
+        thId: 'ID',
+        thUser: 'Usuario',
+        thAction: 'Acción',
+        thIp: 'Dirección IP',
+        thDevice: 'Detalles del Dispositivo',
+        thDate: 'Fecha/Hora',
+        noRecords: 'No se encontraron registros que coincidan con la búsqueda.',
+        nullRecord: 'Registro Nulo',
+        hardDelete: 'Se hizo un Hard Delete',
+        targetUser: 'Usuario:',
+        unknownDevice: 'Desconocido'
+    },
+    en: {
+        errFetch: 'Could not load audit logs.',
+        loadingTitle: 'Querying audit log...',
+        loadingNote: '⏳ Note: The backend uses a free cloud tier. If it is the first load after a period of inactivity, the server may take up to 60 seconds to start. Thank you for your patience.',
+        restrictedTitle: 'Restricted Section',
+        restrictedDesc: 'Access denied. Your system role does not have privileges to view the audit log.',
+        demoTitle: 'Demonstration Mode',
+        demoDesc: 'In a real production environment, this log must be strict and immutable. The system has 5 pre-loaded historical records (unalterable) to demonstrate interface states. Your real activity is already being logged under a strict IP anonymization protocol. By using the',
+        demoSimulateText: 'Simulate Traffic',
+        demoDescEnd: 'feature, the system will inject random events with fictional IP addresses visible for educational purposes.',
+        simInjecting: 'Injecting...',
+        simBtn: 'Simulate Traffic',
+        feedbackSuccess: '✅ 3 random events injected',
+        feedbackError: '❌ Injection error',
+        searchPlaceholder: 'Search',
+        showing: 'Showing:',
+        records: 'record(s)',
+        thId: 'ID',
+        thUser: 'User',
+        thAction: 'Action',
+        thIp: 'IP Address',
+        thDevice: 'Device Details',
+        thDate: 'Date/Time',
+        noRecords: 'No records found matching the search.',
+        nullRecord: 'Null Record',
+        hardDelete: 'A Hard Delete was performed',
+        targetUser: 'User:',
+        unknownDevice: 'Unknown'
+    }
+};
+
+export default function AuditLogsTable({ lang = 'es' }) {
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -30,14 +92,18 @@ export default function AuditLogsTable() {
 
     const timeoutRef = useRef(null);
 
+    const t = (key) => ui[lang][key] || ui['es'][key];
+
     const fetchLogs = async () => {
         try {
             const response = await iamApi.get('/audit-logs');
             
-            // Se mapea el arreglo una sola vez al llegar del backend para eliminar peraciones costosas en busqueda de fecha.
+            // Adaptación del formato de fecha
+            const locales = lang === 'es' ? 'es-MX' : 'en-US';
+            
             const logsProcesados = response.data.data.map(log => ({
                 ...log,
-                displayDate: new Date(log.created_at).toLocaleString('es-MX', {
+                displayDate: new Date(log.created_at).toLocaleString(locales, {
                     day: '2-digit', month: '2-digit', year: 'numeric',
                     hour: '2-digit', minute: '2-digit'
                 })
@@ -48,7 +114,7 @@ export default function AuditLogsTable() {
             if (err.response?.status === 403) {
                 setError('FORBIDDEN');
             } else {
-                setError(err.response?.data?.error || 'No se pudieron cargar los logs de auditoría.');
+                setError(err.response?.data?.error || t('errFetch'));
             }
         } finally {
             setLoading(false);
@@ -61,7 +127,7 @@ export default function AuditLogsTable() {
         return () => {
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
         };
-    }, []);
+    }, [lang]);
 
     useEffect(() => {
         const userStr = localStorage.getItem('user');
@@ -82,10 +148,10 @@ export default function AuditLogsTable() {
         try {
             await iamApi.post('/demo/simulate');
             await fetchLogs(); 
-            setFeedback('✅ 3 eventos aleatorios inyectados');
+            setFeedback(t('feedbackSuccess'));
         } catch (err) {
             console.error("Error al simular tráfico", err);
-            setFeedback('❌ Error de inyección');
+            setFeedback(t('feedbackError'));
         } finally {
             setSimulating(false);
             
@@ -124,9 +190,9 @@ export default function AuditLogsTable() {
             <div className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center space-y-4 bg-surface rounded-xl border border-white/5 shadow-2xl mt-4">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
                 <div className="space-y-2 animate-pulse">
-                    <h3 className="text-xl font-semibold text-white">Consultando bitácora...</h3>
+                    <h3 className="text-xl font-semibold text-white">{t('loadingTitle')}</h3>
                     <p className="text-xs text-text/50 max-w-md mx-auto leading-relaxed">
-                        ⏳ Nota: El backend utiliza una capa gratuita en la nube. Si es la primera carga tras un periodo de inactividad, el servidor puede tardar hasta 60 segundos en iniciar. Agradezco tu paciencia.
+                        {t('loadingNote')}
                     </p>
                 </div>
             </div>
@@ -137,9 +203,9 @@ export default function AuditLogsTable() {
         return (
             <div className="w-full max-w-2xl mx-auto p-8 bg-surface border border-red-500/10 rounded-2xl text-center shadow-2xl mt-4">
                 <div className="w-16 h-16 bg-red-500/10 border border-red-500/20 text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">🔒</div>
-                <h3 className="text-xl font-bold text-white mb-2">Sección Restringida</h3>
+                <h3 className="text-xl font-bold text-white mb-2">{t('restrictedTitle')}</h3>
                 <p className="text-text text-sm leading-relaxed max-w-md mx-auto">
-                    Acceso denegado. Tu rol en el sistema no tiene privilegios para visualizar la bitácora de auditoría.
+                    {t('restrictedDesc')}
                 </p>
             </div>
         );
@@ -155,9 +221,9 @@ export default function AuditLogsTable() {
                     <div className="flex items-start gap-3">
                         <span className="text-accent mt-0.5 text-lg">ℹ️</span>
                         <div>
-                            <h4 className="text-sm font-bold text-white">Modo Demostración</h4>
+                            <h4 className="text-sm font-bold text-white">{t('demoTitle')}</h4>
                             <p className="text-xs text-text/80 leading-relaxed max-w-3xl mt-1">
-                                En un entorno de producción real, esta bitácora debe ser estricta e inmutable. El sistema cuenta con 5 registros históricos pre-cargados (inalterables) para demostrar los estados de la interfaz. Tu actividad real ya se está registrando bajo un estricto protocolo de anonimización en la IP. Al usar la función de <strong>Simular Tráfico</strong>, el sistema inyectará eventos aleatorios con direcciones IP ficticias visibles para fines didácticos.
+                                {t('demoDesc')} <strong>{t('demoSimulateText')}</strong>{t('demoDescEnd')}
                             </p>
                         </div>
                     </div>
@@ -172,7 +238,7 @@ export default function AuditLogsTable() {
                             disabled={simulating}
                             className="w-full sm:w-auto whitespace-nowrap px-4 py-2 bg-accent/10 hover:bg-accent/20 text-accent border border-accent/20 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                         >
-                            {simulating ? 'Inyectando...' : 'Simular Tráfico'}
+                            {simulating ? t('simInjecting') : t('simBtn')}
                         </button>
                     </div>
                 </div>
@@ -186,14 +252,14 @@ export default function AuditLogsTable() {
                     </span>
                     <input
                         type="text"
-                        placeholder="Buscador"
+                        placeholder={t('searchPlaceholder')}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full pl-10 pr-4 py-2 bg-background border border-white/10 rounded-lg text-white focus:outline-none focus:border-accent text-sm transition-colors"
                     />
                 </div>
                 <div className="text-xs text-text font-mono">
-                    Mostrando: <span className="text-white">{filteredLogs.length}</span> registro(s)
+                    {t('showing')} <span className="text-white">{filteredLogs.length}</span> {t('records')}
                 </div>
             </div>
 
@@ -203,19 +269,19 @@ export default function AuditLogsTable() {
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-background/90 backdrop-blur-sm sticky top-0 border-b border-white/5 text-xs font-semibold uppercase tracking-wider text-text z-10">
                             <tr>
-                                <th className="px-6 py-4">ID</th>
-                                <th className="px-6 py-4">Usuario</th>
-                                <th className="px-6 py-4">Acción</th>
-                                <th className="px-6 py-4">Dirección IP</th>
-                                <th className="px-6 py-4">Detalles del Dispositivo</th>
-                                <th className="px-6 py-4">Fecha/Hora</th>
+                                <th className="px-6 py-4">{t('thId')}</th>
+                                <th className="px-6 py-4">{t('thUser')}</th>
+                                <th className="px-6 py-4">{t('thAction')}</th>
+                                <th className="px-6 py-4">{t('thIp')}</th>
+                                <th className="px-6 py-4">{t('thDevice')}</th>
+                                <th className="px-6 py-4">{t('thDate')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5 text-sm">
                             {filteredLogs.length === 0 ? (
                                 <tr>
                                     <td colSpan="6" className="text-center py-12 text-text">
-                                        No se encontraron registros que coincidan con la búsqueda.
+                                        {t('noRecords')}
                                     </td>
                                 </tr>
                             ) : (
@@ -232,8 +298,8 @@ export default function AuditLogsTable() {
                                                 </>
                                             ) : (
                                                 <>
-                                                    <div className="font-medium text-red-400/80 italic text-xs">Registro Nulo</div>
-                                                    <div className="text-xs text-text font-mono mt-0.5 opacity-50">Se hizo un Hard Delete</div>
+                                                    <div className="font-medium text-red-400/80 italic text-xs">{t('nullRecord')}</div>
+                                                    <div className="text-xs text-text font-mono mt-0.5 opacity-50">{t('hardDelete')}</div>
                                                 </>
                                             )}
                                         </td>
@@ -246,7 +312,7 @@ export default function AuditLogsTable() {
                                             {/* Renderizado del usuario afectado */}
                                             {log.payload?.target_email && (
                                                 <div className="mt-1.5 flex items-center text-[11px] font-mono">
-                                                    <span className="text-text/70 mr-1.5">Usuario:</span>
+                                                    <span className="text-text/70 mr-1.5">{t('targetUser')}</span>
                                                     <span 
                                                         className="text-white bg-white/5 px-1.5 py-0.5 rounded border border-white/10 truncate max-w-[120px] inline-block align-bottom" 
                                                         title={log.payload.target_email}
@@ -261,7 +327,7 @@ export default function AuditLogsTable() {
                                         
                                         {/* Detalles del dispositivo */}
                                         <td className="px-6 py-4 text-xs text-text font-mono truncate max-w-[200px]" title={log.payload?.user_agent}>
-                                            {log.payload?.user_agent || 'Desconocido'}
+                                            {log.payload?.user_agent || t('unknownDevice')}
                                         </td>
                                         
                                         <td className="px-6 py-4 text-xs text-text font-mono">

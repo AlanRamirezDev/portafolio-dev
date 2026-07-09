@@ -1,7 +1,7 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import ReporteriaDashboard from '../../components/reporteria/ReporteriaDashboard.jsx';
-import { getLangFromUrl } from '../../i18n/utils';
+import Layout from '../../../layouts/Layout.astro';
+import ReporteriaDashboard from '../../../components/reporteria/ReporteriaDashboard.jsx';
+import { getLangFromUrl } from '../../../i18n/utils';
 
 const lang = getLangFromUrl(Astro.url);
 
@@ -49,7 +49,6 @@ const homeUrl = lang === 'es' ? '/' : '/en/';
 
   </main>
 
-  {/* Script interceptor para el Bloqueo */}
   <script>
     window.addEventListener('reporteria-action', (e) => {
         const customEvent = e as CustomEvent;

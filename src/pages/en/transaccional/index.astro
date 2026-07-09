@@ -1,7 +1,7 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import InversionesDashboard from '../../components/transaccional/InversionesDashboard.jsx';
-import { getLangFromUrl } from '../../i18n/utils';
+import Layout from '../../../layouts/Layout.astro';
+import InversionesDashboard from '../../../components/transaccional/InversionesDashboard.jsx';
+import { getLangFromUrl } from '../../../i18n/utils';
 
 const lang = getLangFromUrl(Astro.url);
 
@@ -49,7 +49,6 @@ const t = ui[lang] || ui['es'];
 
   </main>
 
-  {/* Interceptor global para proteger las transacciones activas */}
   <script>
     window.addEventListener('transaccional-action', (e) => {
         const event = e as CustomEvent;

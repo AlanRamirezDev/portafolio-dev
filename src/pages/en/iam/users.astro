@@ -1,7 +1,7 @@
 ---
-import '../../styles/global.css';
-import UserManagement from '../../components/iam/UserManagement.jsx';
-import { getLangFromUrl } from '../../i18n/utils';
+import '../../../styles/global.css';
+import UserManagement from '../../../components/iam/UserManagement.jsx';
+import { getLangFromUrl } from '../../../i18n/utils';
 
 const lang = getLangFromUrl(Astro.url);
 
@@ -68,17 +68,15 @@ const t = ui[lang] || ui['es'];
         </main>
 
         <script>
-            import iamApi from "../../lib/iam/iamApi";
+            import iamApi from "../../../lib/iam/iamApi";
 
             const isEnglish = window.location.pathname.startsWith('/en');
             const loginUrl = isEnglish ? '/en/iam' : '/iam';
 
-            // Expulsa al usuario antes de que intente interactuar con el DOM si no hay sesión
             if (!localStorage.getItem('jwt_token')) {
                 window.location.replace(loginUrl);
             }
 
-            // Listener global del estado
             window.addEventListener('iam-user-creation', (e) => {
                 const event = e as CustomEvent;
                 const isCreating = event.detail?.active;
@@ -100,7 +98,6 @@ const t = ui[lang] || ui['es'];
                 }
             });
 
-            // Manejo de cierre de sesión
             document.getElementById('logout-btn')?.addEventListener('click', async () => {
                 const btn = document.getElementById('logout-btn');
                 if (btn) {

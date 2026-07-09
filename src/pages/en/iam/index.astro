@@ -1,7 +1,7 @@
 ---
-import '../../styles/global.css';
-import LoginForm from '../../components/iam/LoginForm.jsx';
-import { getLangFromUrl } from '../../i18n/utils';
+import '../../../styles/global.css';
+import LoginForm from '../../../components/iam/LoginForm.jsx';
+import { getLangFromUrl } from '../../../i18n/utils';
 
 const lang = getLangFromUrl(Astro.url);
 
@@ -45,7 +45,6 @@ const t = ui[lang] || ui['es'];
     </head>
     <body class="min-h-screen flex flex-col lg:flex-row bg-surface text-text antialiased">
         
-        {/* Panel Izquierdo */}
         <main class="relative w-full lg:w-5/12 min-h-screen flex flex-col z-10">
             
             {/* Header */}

@@ -11,12 +11,16 @@ const iamApi = axios.create({
     }
 });
 
-// Inyectar el token automáticamente
+// Inyectar el token y el idioma automáticamente
 iamApi.interceptors.request.use((config) => {
     const token = localStorage.getItem('jwt_token');
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
+
+    const isEnglish = window.location.pathname.startsWith('/en');
+    config.headers['Accept-Language'] = isEnglish ? 'en' : 'es';
+
     return config;
 });
 
@@ -28,8 +32,11 @@ iamApi.interceptors.response.use(
             localStorage.removeItem('jwt_token');
             localStorage.removeItem('user');
             
-            if (window.location.pathname !== '/iam') {
-                window.location.replace('/iam');
+            const isEnglish = window.location.pathname.startsWith('/en');
+            const loginUrl = isEnglish ? '/en/iam' : '/iam';
+            
+            if (window.location.pathname !== loginUrl) {
+                window.location.replace(loginUrl);
             }
         }
         return Promise.reject(error);
