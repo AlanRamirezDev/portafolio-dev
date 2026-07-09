@@ -126,7 +126,7 @@ export default function HeroDual({ lang = 'es' }) {
           
           {!isDevMode ? (
             // === MODO PERFIL ===
-            <div key="profile" className="animate-mode-enter flex flex-col items-start text-left absolute w-full">
+            <div key="profile" className="animate-mode-enter flex flex-col items-start text-left w-full">
               <div className="inline-block px-3 py-1 bg-surface border border-white/10 rounded-md text-xs font-mono text-gray-400 mb-4 shadow-sm">
                 {t('hero.profileBadge')}
               </div>
@@ -142,7 +142,7 @@ export default function HeroDual({ lang = 'es' }) {
             </div>
           ) : (
             // === MODO TERMINAL (Código) ===
-            <div key="terminal" className="animate-mode-enter bg-surface border border-white/10 rounded-xl p-6 md:p-8 shadow-2xl font-mono text-sm md:text-base w-full overflow-x-auto relative absolute">
+            <div key="terminal" className="animate-mode-enter bg-surface border border-white/10 rounded-xl p-6 md:p-8 shadow-2xl font-mono text-sm md:text-base w-full overflow-x-auto relative">
               
               {/* Cabecera de la terminal (Botones OSX) */}
               <div className="flex gap-2 mb-6 pb-4 border-b border-white/10">
