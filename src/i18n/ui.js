@@ -9,7 +9,7 @@ export const languages = {
     es: {
       'hero.profileBadge': 'Perfil Profesional',
       'hero.greeting': '¡Hola! Soy',
-      'hero.role': 'Ingeniero en Informática | Full Stack Developer',
+      'hero.role': 'Ingeniero en Informática | Desarrollador Full Stack',
       'hero.description': 'Especializado en arquitecturas escalables de alto rendimiento. Traduzco lógica de negocio compleja en plataformas resilientes, priorizando la concurrencia segura, el código limpio y la tolerancia a fallos desde el desarrollo local hasta el despliegue en producción, incluyendo pruebas de calidad.',
       'hero.profile': 'Perfil',
       'hero.terminal': 'Terminal',

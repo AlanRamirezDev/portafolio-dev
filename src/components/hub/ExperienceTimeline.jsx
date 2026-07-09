@@ -6,7 +6,7 @@ const diccionarioLogros = {
     {
       id: 'logro-3',
       hash: 'a3d4e12',
-      titulo: 'Full Stack & DevOps Developer',
+      titulo: 'Desarrollador Full Stack & DevOps',
       entidad: 'Centro Federal de Conciliación y Registro Laboral',
       periodo: 'Feb 2023 - Actual',
       descripcionCorta: 'Modernización de la interfaz de Conciliación Colectiva y desarrollo de lógicas de negocio bajo el patrón MVC.',
