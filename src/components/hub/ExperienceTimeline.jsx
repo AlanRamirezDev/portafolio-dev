@@ -9,7 +9,7 @@ const diccionarioLogros = {
       titulo: 'Desarrollador Full Stack & DevOps',
       entidad: 'Centro Federal de Conciliación y Registro Laboral',
       periodo: 'Feb 2023 - Actual',
-      descripcionCorta: 'Modernización de la interfaz de Conciliación Colectiva y desarrollo de lógicas de negocio bajo el patrón MVC.',
+      descripcionCorta: 'Modernización de la interfaz de la plataforma de Conciliación Colectiva y desarrollo de lógicas de negocio bajo el patrón MVC.',
       detalles: [
         'Optimización y refactorización de consultas complejas en PostgreSQL y MySQL, logrando una reducción comprobada del 62% en los tiempos de respuesta.',
         'Desarrollo de nuevas funcionalidades integrando APIs RESTful con PHP (Laravel) y JavaScript (ES6+), garantizando escalabilidad.',
@@ -56,7 +56,7 @@ const diccionarioLogros = {
       titulo: 'Full Stack & DevOps Developer',
       entidad: 'Centro Federal de Conciliación y Registro Laboral',
       periodo: 'Feb 2023 - Present',
-      descripcionCorta: 'Modernization of the Conciliación Colectiva interface and development of business logic under the MVC pattern.',
+      descripcionCorta: 'Modernization of the Conciliación Colectiva platform interface and development of business logic under the MVC pattern.',
       detalles: [
         'Optimization and refactoring of complex queries in PostgreSQL and MySQL, achieving a proven 62% reduction in response times.',
         'Development of new features integrating RESTful APIs with PHP (Laravel) and JavaScript (ES6+), ensuring scalability.',

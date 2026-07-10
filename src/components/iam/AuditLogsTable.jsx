@@ -189,9 +189,9 @@ export default function AuditLogsTable({ lang = 'es' }) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center space-y-4 bg-surface rounded-xl border border-white/5 shadow-2xl mt-4">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
-                <div className="space-y-2 animate-pulse">
+                <div className="space-y-2">
                     <h3 className="text-xl font-semibold text-white">{t('loadingTitle')}</h3>
-                    <p className="text-xs text-text/50 max-w-md mx-auto leading-relaxed">
+                    <p className="text-xs text-text/50 max-w-md mx-auto leading-relaxed animate-pulse">
                         {t('loadingNote')}
                     </p>
                 </div>

@@ -275,9 +275,9 @@ export default function ReporteriaDashboard({ lang = 'es' }) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] p-6 text-center space-y-4 bg-surface rounded-xl border border-white/5 shadow-2xl mt-4">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
-                <div className="space-y-2 animate-pulse">
+                <div className="space-y-2">
                     <h3 className="text-xl font-semibold text-white">{t('serverWaking')}</h3>
-                    <p className="text-xs text-text/50 max-w-md mx-auto leading-relaxed">
+                    <p className="text-xs text-text/50 max-w-md mx-auto leading-relaxed animate-pulse">
                         {t('serverWakingNote')}
                     </p>
                 </div>
@@ -372,16 +372,16 @@ export default function ReporteriaDashboard({ lang = 'es' }) {
 
             {/* Manejador de Errores */}
             {error && (
-                <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm font-mono leading-relaxed flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3">
+                <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm font-mono leading-relaxed flex flex-row items-start justify-between gap-3 w-full">
+                    <div className="flex flex-row items-start gap-3 flex-1 min-w-0">
                         <svg aria-hidden="true" className="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
-                        <span>{error}</span>
+                        <span className="break-words">{error}</span>
                     </div>
                     <button 
                         onClick={() => setError(null)} 
-                        className="text-red-400 hover:text-red-300 transition-colors shrink-0 p-1 rounded-md hover:bg-red-500/20 cursor-pointer"
+                        className="text-red-400 hover:text-red-300 transition-colors shrink-0 p-1 rounded-md hover:bg-red-500/20 cursor-pointer mt-0.5 ml-2"
                     >
                         <svg aria-hidden="true" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
