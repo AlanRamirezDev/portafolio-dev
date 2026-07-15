@@ -10,6 +10,11 @@
 ![Spring_Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 
+## 📚 Documentación Técnica
+👉 **[Explorar Arquitectura y Documentación Completa](https://alan-ramirez-dev.mintlify.site/)**
+
+---
+
 ¡Te doy la bienvenida al repositorio de mi portafolio profesional!
 
 Este proyecto actúa como un HUB central interactivo diseñado bajo una arquitectura estática y modular para demostrar mis capacidades en ingeniería de software, patrones de diseño y despliegues fullstack integrando múltiples tecnologías.
