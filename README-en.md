@@ -11,7 +11,7 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 
 ## 📚 Technical Documentation
-👉 **[Explore Full Architecture and Documentation](https://alan-ramirez-dev.mintlify.site/)**
+👉 **[Explore Full Architecture and Documentation](https://alan-ramirez-dev.mintlify.site/en/hub/introduccion)**
 
 ---
 
