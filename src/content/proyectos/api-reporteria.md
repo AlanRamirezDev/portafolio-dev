@@ -2,6 +2,7 @@
 title: "Generador Dinámico de Reportes (PDF/CSV)"
 description: "Microservicio para la generación de reportes binarios estructurados en PDF y CSV."
 tech: ["PHP 8.3", "Laravel 13", "React", "Astro", "Pest", "Tailwind CSS"]
+githubUrl: "https://github.com/AlanRamirezDev/api-reporteria"
 status: "Completado"
 ---
 

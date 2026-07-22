@@ -10,7 +10,7 @@ export async function getStaticPaths() {
   
   return proyectos.map(proyecto => {
     // Removemos 'en/' del ID para generar una URL limpia
-    const cleanId = proyecto.id.replace('en/', '');
+    const cleanId = proyecto.id.replace(/^en[\/\\]/i, '');
     return {
       params: { id: cleanId },
       props: { proyecto, cleanId },
@@ -35,7 +35,7 @@ const demo = CONFIG_DEMOS[cleanId];
 
 <Layout title={`${proyecto.data.title} | Portfolio`}>
   <main class="max-w-4xl mx-auto p-8 mt-4">
-    <a href="/en/" class="text-accent hover:text-accent/80 mb-8 inline-flex items-center gap-2 font-mono text-sm transition-colors">
+    <a href="/en" class="text-accent hover:text-accent/80 mb-8 inline-flex items-center gap-2 font-mono text-sm transition-colors">
       <span>&lt;-</span> Back to main system
     </a>
 
@@ -56,14 +56,30 @@ const demo = CONFIG_DEMOS[cleanId];
         {proyecto.data.description}
       </p>
 
-      {/* Renderizado declarativo basado en datos */}
-      {demo && (
-        <div class="mb-4">
-          <a href={demo.url} class="inline-flex items-center gap-2 bg-accent text-background font-bold px-4 py-2 rounded-lg hover:bg-accent/80 transition-colors shadow-sm text-sm">
+      <div class="mb-4 flex flex-col sm:flex-row gap-4 sm:items-center">
+        
+        {/* Renderizado declarativo basado en datos */}
+        {demo && (
+          <a href={demo.url} class="flex sm:inline-flex justify-center items-center gap-2 bg-accent text-background font-bold px-5 py-2.5 rounded-lg hover:bg-accent/80 transition-colors shadow-sm text-sm w-full sm:w-auto">
             <span>{demo.icono}</span> {demo.texto}
           </a>
-        </div>
-      )}
+        )}
+
+        {proyecto.data.githubUrl && (
+          <a 
+            href={proyecto.data.githubUrl} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="flex sm:inline-flex justify-center items-center gap-2 bg-surface text-gray-300 font-mono text-sm px-5 py-2.5 rounded-lg border border-white/10 hover:border-accent/50 hover:text-accent transition-all duration-300 shadow-sm group w-full sm:w-auto"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 group-hover:text-accent transition-colors">
+              <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.02c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+            </svg>
+            View Code on GitHub
+          </a>
+        )}
+        
+      </div>
     </header>
 
     <article class="prose prose-invert prose-headings:font-sans prose-headings:text-white prose-p:text-text prose-a:text-accent hover:prose-a:text-accent/80 prose-code:font-mono prose-code:text-accent prose-pre:bg-surface prose-pre:border prose-pre:border-white/10 max-w-none">

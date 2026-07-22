@@ -3,6 +3,7 @@ title: "Asynchronous Ingestion Pipeline (ETL)"
 description: "High-performance microservice for massive logistics telemetry ingestion. Fault-tolerant architecture, distributed processing with Virtual Threads, JDBC Batching, and multi-layer defenses."
 tech: ["Java 21", "Spring Boot 3", "Spring Batch", "PostgreSQL", "React", "Astro", "Tailwind CSS"]
 status: "Completed"
+githubUrl: "https://github.com/AlanRamirezDev/logiflow"
 ---
 
 ## The Architectural Challenge
