@@ -2,8 +2,9 @@
 title: "Dynamic Report Generator (PDF/CSV)"
 description: "Microservice for generating structured binary reports in PDF and CSV."
 tech: ["PHP 8.3", "Laravel 13", "React", "Astro", "Pest", "Tailwind CSS"]
-status: "Completed"
 githubUrl: "https://github.com/AlanRamirezDev/api-reporteria"
+docsUrl: "https://alan-ramirez-dev.mintlify.site/en/reporteria/introduccion"
+status: "Completed"
 ---
 
 ## The Architectural Challenge

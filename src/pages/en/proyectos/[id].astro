@@ -65,17 +65,34 @@ const demo = CONFIG_DEMOS[cleanId];
           </a>
         )}
 
+        {/* Botón Documentacion */}
+        {proyecto.data.docsUrl && (
+          <a 
+            href={proyecto.data.docsUrl} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="flex sm:inline-flex justify-center items-center gap-2 bg-surface text-gray-300 font-mono text-sm px-5 py-2.5 rounded-lg border border-white/10 hover:border-accent/50 hover:text-accent transition-all duration-300 shadow-sm group/docs w-full sm:w-auto"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 group-hover/docs:text-accent transition-colors">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+            </svg>
+            Documentation
+          </a>
+        )}
+
+        {/* Botón GitHub */}
         {proyecto.data.githubUrl && (
           <a 
             href={proyecto.data.githubUrl} 
             target="_blank" 
             rel="noopener noreferrer" 
-            class="flex sm:inline-flex justify-center items-center gap-2 bg-surface text-gray-300 font-mono text-sm px-5 py-2.5 rounded-lg border border-white/10 hover:border-accent/50 hover:text-accent transition-all duration-300 shadow-sm group w-full sm:w-auto"
+            class="flex sm:inline-flex justify-center items-center gap-2 bg-surface text-gray-300 font-mono text-sm px-5 py-2.5 rounded-lg border border-white/10 hover:border-accent/50 hover:text-accent transition-all duration-300 shadow-sm group/btn w-full sm:w-auto"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 group-hover:text-accent transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 group-hover/btn:text-accent transition-colors">
               <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.02c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
             </svg>
-            View Code on GitHub
+            Code on GitHub
           </a>
         )}
         

@@ -2,8 +2,9 @@
 title: "Investment Transaction Engine"
 description: "Fullstack ecosystem for real-time financial portfolio management, featuring an interactive simulator and automated capital injection."
 tech: ["Java 21", "Spring Boot 3", "PostgreSQL", "React", "Astro", "Docker"]
-status: "Completed"
 githubUrl: "https://github.com/AlanRamirezDev/motor-inversiones-api"
+docsUrl: "https://alan-ramirez-dev.mintlify.site/en/transaccional/introduccion"
+status: "Completed"
 ---
 
 ## The Architectural Challenge

@@ -2,8 +2,9 @@
 title: "Gestión de Identidad y Accesos (IAM)"
 description: "Plataforma modular con seguridad JWT y control de acceso basado en roles (RBAC). Desarrollada con arquitectura de islas y consumiendo una API RESTful protegida."
 tech: ["PHP 8.3", "Laravel 13", "PostgreSQL", "React", "Astro", "Tailwind CSS"]
-status: "Completado"
 githubUrl: "https://github.com/AlanRamirezDev/iam-core"
+docsUrl: "https://alan-ramirez-dev.mintlify.site/iam/introduccion"
+status: "Completado"
 ---
 
 ## El Desafío Arquitectónico

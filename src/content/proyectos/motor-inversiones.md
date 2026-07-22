@@ -2,8 +2,9 @@
 title: "Motor Transaccional para Inversiones"
 description: "Ecosistema Fullstack para la gestión de portafolios financieros en tiempo real, con un simulador interactivo e inyección automática de capital."
 tech: ["Java 21", "Spring Boot 3", "PostgreSQL", "React", "Astro", "Docker"]
-status: "Completado"
 githubUrl: "https://github.com/AlanRamirezDev/motor-inversiones-api"
+docsUrl: "https://alan-ramirez-dev.mintlify.site/transaccional/introduccion"
+status: "Completado"
 ---
 
 ## El Desafío Arquitectónico
